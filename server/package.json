@@ -1,0 +1,36 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Job Board API Server",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "seed:admin": "node seed/adminSeed.js",
+    "seed:demo": "node seed/demoSeed.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cloudinary": "^1.41.3",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-mongo-sanitize": "^2.2.0",
+    "express-rate-limit": "^8.3.2",
+    "express-validator": "^7.3.2",
+    "file-type": "^22.0.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.4.1",
+    "multer": "^2.1.1",
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^8.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

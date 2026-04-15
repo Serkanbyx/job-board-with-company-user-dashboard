@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.test
+.env*.local
+server/.env
+client/.env
+
+# Build output
+dist/
+build/
+
+# Uploaded files
+uploads/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Cloudinary / uploaded assets cache
+cloudinary-cache/
+
+# Debug
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage (if testing added later)
+coverage/
+.nyc_output/
