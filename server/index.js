@@ -10,6 +10,7 @@ import { globalLimiter } from './middlewares/rateLimiter.js';
 import auditLogger from './middlewares/auditLogger.js';
 import errorHandler from './middlewares/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
+import jobRoutes from './routes/jobRoutes.js';
 
 const app = express();
 
@@ -87,6 +88,7 @@ app.use(auditLogger);
 
 // 11. API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/jobs', jobRoutes);
 
 // 12. Health check
 app.get('/api/health', (_req, res) => {
