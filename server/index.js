@@ -9,6 +9,7 @@ import sanitizeInputs from './middlewares/sanitize.js';
 import { globalLimiter } from './middlewares/rateLimiter.js';
 import auditLogger from './middlewares/auditLogger.js';
 import errorHandler from './middlewares/errorHandler.js';
+import authRoutes from './routes/authRoutes.js';
 
 const app = express();
 
@@ -84,7 +85,8 @@ app.use('/api', globalLimiter);
 // 10. Audit logger
 app.use(auditLogger);
 
-// 11. API Routes (will be added in later steps)
+// 11. API Routes
+app.use('/api/auth', authRoutes);
 
 // 12. Health check
 app.get('/api/health', (_req, res) => {
