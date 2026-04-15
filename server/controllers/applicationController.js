@@ -3,6 +3,10 @@ import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse.js';
 import createNotification from '../utils/createNotification.js';
+import User from '../models/User.js';
+import sendEmail from '../services/emailService.js';
+import applicationReceivedEmail from '../templates/emails/applicationReceivedEmail.js';
+import statusUpdateEmail from '../templates/emails/statusUpdateEmail.js';
 
 const APPLICATION_ALLOWED_FIELDS = ['cvUrl', 'coverLetter', 'expectedSalary', 'availableFrom'];
 
@@ -91,6 +95,17 @@ export const applyToJob = async (req, res, next) => {
       relatedJob: jobId,
       relatedApplication: application._id,
     });
+
+    // Email notification to company (respects notification preferences)
+    try {
+      const company = await User.findById(job.company);
+      if (company?.notificationPrefs?.emailOnApplication) {
+        const { subject, html } = applicationReceivedEmail(company, req.user, job);
+        await sendEmail({ to: company.email, subject, html });
+      }
+    } catch {
+      // Email failure must never break the main operation
+    }
 
     sendSuccess(res, 201, { application }, 'Application submitted successfully');
   } catch (error) {
@@ -386,6 +401,22 @@ export const updateApplicationStatus = async (req, res, next) => {
       relatedJob: populatedApplication.job._id,
       relatedApplication: populatedApplication._id,
     });
+
+    // Email notification to candidate (respects notification preferences)
+    try {
+      const candidateUser = await User.findById(populatedApplication.candidate._id);
+      if (candidateUser?.notificationPrefs?.emailOnStatusChange) {
+        const { subject, html } = statusUpdateEmail(
+          candidateUser,
+          populatedApplication.job,
+          status,
+          statusNote
+        );
+        await sendEmail({ to: candidateUser.email, subject, html });
+      }
+    } catch {
+      // Email failure must never break the main operation
+    }
 
     sendSuccess(res, 200, { application: populatedApplication }, 'Application status updated successfully');
   } catch (error) {

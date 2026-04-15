@@ -7,6 +7,8 @@ import {
   verifyRefreshToken,
 } from '../utils/generateToken.js';
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
+import sendEmail from '../services/emailService.js';
+import welcomeEmail from '../templates/emails/welcomeEmail.js';
 
 /**
  * @desc    Register a new user (candidate or company)
@@ -74,6 +76,14 @@ export const register = async (req, res, next) => {
       req.ip,
       req.headers['user-agent']
     );
+
+    // Send welcome email (non-blocking — failure won't affect registration)
+    try {
+      const { subject, html } = welcomeEmail(user);
+      await sendEmail({ to: user.email, subject, html });
+    } catch {
+      // Email failure must never break registration
+    }
 
     sendSuccess(
       res,

@@ -16,6 +16,7 @@ import uploadRoutes from './routes/uploadRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import savedJobRoutes from './routes/savedJobRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import { verifyConnection } from './config/email.js';
 
 const app = express();
 
@@ -124,6 +125,7 @@ app.use(errorHandler);
 // Start server
 const startServer = async () => {
   await connectDB();
+  await verifyConnection();
   app.listen(env.PORT, () => {
     console.log(
       `🚀 Server running on http://localhost:${env.PORT} [${env.NODE_ENV}]`
