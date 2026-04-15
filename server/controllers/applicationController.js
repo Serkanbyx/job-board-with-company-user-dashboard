@@ -1,8 +1,24 @@
+import mongoose from 'mongoose';
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse.js';
 
 const APPLICATION_ALLOWED_FIELDS = ['cvUrl', 'coverLetter', 'expectedSalary', 'availableFrom'];
+
+/**
+ * State machine for application status transitions.
+ * Terminal states (hired, rejected, withdrawn) have no outgoing transitions.
+ */
+const STATUS_TRANSITIONS = {
+  pending: ['reviewed', 'rejected'],
+  reviewed: ['shortlisted', 'rejected'],
+  shortlisted: ['interviewed', 'rejected'],
+  interviewed: ['offered', 'rejected'],
+  offered: ['hired', 'rejected'],
+  hired: [],
+  rejected: [],
+  withdrawn: [],
+};
 
 const CANDIDATE_EXCLUDED_FIELDS = '-internalNotes -rating';
 
@@ -270,6 +286,261 @@ export const withdrawApplication = async (req, res, next) => {
     await Job.findByIdAndUpdate(application.job, { $inc: { applicationCount: -1 } });
 
     sendSuccess(res, 200, { application }, 'Application withdrawn successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Update application status with state machine validation
+ * @route   PATCH /api/applications/:id/status
+ * @access  Company only (job owner) or Admin
+ */
+export const updateApplicationStatus = async (req, res, next) => {
+  try {
+    const application = await Application.findById(req.params.id).populate('job', 'company');
+
+    if (!application) {
+      return sendError(res, 404, 'Application not found.');
+    }
+
+    const isJobOwner = application.job.company.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isJobOwner && !isAdmin) {
+      return sendError(res, 403, "You don't have permission to update this application.");
+    }
+
+    const { status, statusNote } = req.body;
+
+    if (!status) {
+      return sendError(res, 400, 'Status is required.');
+    }
+
+    const currentStatus = application.status;
+    const allowedTransitions = STATUS_TRANSITIONS[currentStatus] || [];
+
+    if (!allowedTransitions.includes(status)) {
+      return sendError(
+        res,
+        400,
+        `Cannot change status from '${currentStatus}' to '${status}'. Allowed transitions: [${allowedTransitions.join(', ')}]`
+      );
+    }
+
+    if (statusNote && statusNote.length > 1000) {
+      return sendError(res, 400, 'Status note cannot exceed 1000 characters.');
+    }
+
+    application.status = status;
+    application.statusHistory.push({
+      status,
+      note: statusNote || undefined,
+      changedAt: new Date(),
+      changedBy: req.user._id,
+    });
+
+    await application.save();
+
+    const populatedApplication = await Application.findById(application._id)
+      .populate({
+        path: 'job',
+        select: JOB_POPULATE_FIELDS,
+        populate: { path: 'company', select: 'companyName companyLogo' },
+      })
+      .populate('candidate', CANDIDATE_POPULATE_FIELDS);
+
+    // TODO: Trigger notification for the candidate (Step 11)
+
+    sendSuccess(res, 200, { application: populatedApplication }, 'Application status updated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Update internal notes and rating for an application
+ * @route   PATCH /api/applications/:id/notes
+ * @access  Company only (job owner) or Admin
+ */
+export const updateInternalNotes = async (req, res, next) => {
+  try {
+    const application = await Application.findById(req.params.id).populate('job', 'company');
+
+    if (!application) {
+      return sendError(res, 404, 'Application not found.');
+    }
+
+    const isJobOwner = application.job.company.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isJobOwner && !isAdmin) {
+      return sendError(res, 403, "You don't have permission to update this application.");
+    }
+
+    const { internalNotes, rating } = req.body;
+
+    if (internalNotes !== undefined) {
+      if (internalNotes.length > 2000) {
+        return sendError(res, 400, 'Internal notes cannot exceed 2000 characters.');
+      }
+      application.internalNotes = internalNotes;
+    }
+
+    if (rating !== undefined) {
+      const parsedRating = parseInt(rating, 10);
+      if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+        return sendError(res, 400, 'Rating must be an integer between 1 and 5.');
+      }
+      application.rating = parsedRating;
+    }
+
+    await application.save();
+
+    sendSuccess(res, 200, { application }, 'Internal notes updated successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get application statistics for a specific job
+ * @route   GET /api/jobs/:jobId/applications/stats
+ * @access  Company only (job owner) or Admin
+ */
+export const getApplicationStats = async (req, res, next) => {
+  try {
+    const { jobId } = req.params;
+
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return sendError(res, 404, 'Job not found.');
+    }
+
+    const isJobOwner = job.company.toString() === req.user._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isJobOwner && !isAdmin) {
+      return sendError(res, 403, "You don't have permission to view these statistics.");
+    }
+
+    const jobObjectId = new mongoose.Types.ObjectId(jobId);
+
+    const [statusCounts, ratingStats, latestApplication] = await Promise.all([
+      Application.aggregate([
+        { $match: { job: jobObjectId } },
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+      ]),
+      Application.aggregate([
+        { $match: { job: jobObjectId, rating: { $ne: null } } },
+        { $group: { _id: null, averageRating: { $avg: '$rating' }, ratedCount: { $sum: 1 } } },
+      ]),
+      Application.findOne({ job: jobId }).sort({ createdAt: -1 }).select('createdAt').lean(),
+    ]);
+
+    const statusBreakdown = {
+      pending: 0,
+      reviewed: 0,
+      shortlisted: 0,
+      interviewed: 0,
+      offered: 0,
+      hired: 0,
+      rejected: 0,
+      withdrawn: 0,
+    };
+
+    let total = 0;
+    for (const entry of statusCounts) {
+      statusBreakdown[entry._id] = entry.count;
+      total += entry.count;
+    }
+
+    const stats = {
+      statusBreakdown,
+      total,
+      averageRating: ratingStats[0]?.averageRating ? Math.round(ratingStats[0].averageRating * 100) / 100 : null,
+      ratedCount: ratingStats[0]?.ratedCount || 0,
+      lastApplicationDate: latestApplication?.createdAt || null,
+    };
+
+    sendSuccess(res, 200, { stats }, 'Application statistics retrieved successfully');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Bulk update multiple application statuses
+ * @route   PATCH /api/applications/bulk-status
+ * @access  Company only
+ */
+export const bulkUpdateStatus = async (req, res, next) => {
+  try {
+    const { applicationIds, status, statusNote } = req.body;
+
+    if (!applicationIds || !Array.isArray(applicationIds) || applicationIds.length === 0) {
+      return sendError(res, 400, 'applicationIds must be a non-empty array.');
+    }
+
+    if (!status) {
+      return sendError(res, 400, 'Status is required.');
+    }
+
+    if (statusNote && statusNote.length > 1000) {
+      return sendError(res, 400, 'Status note cannot exceed 1000 characters.');
+    }
+
+    const applications = await Application.find({
+      _id: { $in: applicationIds },
+    }).populate('job', 'company');
+
+    const results = { updated: 0, skipped: 0, errors: [] };
+
+    const updatePromises = [];
+
+    for (const app of applications) {
+      const isJobOwner = app.job.company.toString() === req.user._id.toString();
+
+      if (!isJobOwner) {
+        results.skipped++;
+        results.errors.push({ id: app._id, reason: 'You do not own this job.' });
+        continue;
+      }
+
+      const allowedTransitions = STATUS_TRANSITIONS[app.status] || [];
+      if (!allowedTransitions.includes(status)) {
+        results.skipped++;
+        results.errors.push({
+          id: app._id,
+          reason: `Cannot change status from '${app.status}' to '${status}'. Allowed: [${allowedTransitions.join(', ')}]`,
+        });
+        continue;
+      }
+
+      app.status = status;
+      app.statusHistory.push({
+        status,
+        note: statusNote || undefined,
+        changedAt: new Date(),
+        changedBy: req.user._id,
+      });
+
+      updatePromises.push(app.save());
+      results.updated++;
+    }
+
+    // Track IDs that were not found in DB
+    const foundIds = new Set(applications.map((a) => a._id.toString()));
+    for (const id of applicationIds) {
+      if (!foundIds.has(id)) {
+        results.skipped++;
+        results.errors.push({ id, reason: 'Application not found.' });
+      }
+    }
+
+    await Promise.all(updatePromises);
+
+    sendSuccess(res, 200, results, 'Bulk status update completed');
   } catch (error) {
     next(error);
   }
