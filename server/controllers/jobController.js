@@ -1,5 +1,7 @@
 import Job from '../models/Job.js';
+import User from '../models/User.js';
 import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse.js';
+import escapeRegex from '../utils/escapeRegex.js';
 
 const JOB_WRITABLE_FIELDS = [
   'title',
@@ -70,8 +72,38 @@ export const createJob = async (req, res, next) => {
   }
 };
 
+// Valid enum values for filter validation
+const VALID_EXPERIENCE = ['entry', 'junior', 'mid', 'senior', 'lead', 'manager', 'any'];
+const VALID_EDUCATION = ['none', 'high-school', 'associate', 'bachelor', 'master', 'doctorate', 'any'];
+
+const SORT_OPTIONS = {
+  newest: { isFeatured: -1, createdAt: -1 },
+  oldest: { createdAt: 1 },
+  'salary-high': { 'salary.max': -1, createdAt: -1 },
+  'salary-low': { 'salary.min': 1, createdAt: -1 },
+  deadline: { deadline: 1, createdAt: -1 },
+  'most-applied': { applicationCount: -1, createdAt: -1 },
+  'most-viewed': { views: -1, createdAt: -1 },
+};
+
 /**
- * @desc    Get all active jobs (public listing with pagination)
+ * Calculates a date threshold from a duration string (24h, 7d, 30d).
+ */
+const getPostedWithinThreshold = (value) => {
+  const now = new Date();
+  const match = value.match(/^(\d+)(h|d)$/);
+  if (!match) return null;
+
+  const amount = parseInt(match[1], 10);
+  const unit = match[2];
+
+  if (unit === 'h') return new Date(now.getTime() - amount * 60 * 60 * 1000);
+  if (unit === 'd') return new Date(now.getTime() - amount * 24 * 60 * 60 * 1000);
+  return null;
+};
+
+/**
+ * @desc    Get all active jobs (public listing with advanced filters, search & pagination)
  * @route   GET /api/jobs
  * @access  Public
  */
@@ -83,10 +115,90 @@ export const getAllJobs = async (req, res, next) => {
 
     const filter = { isActive: true };
 
+    // Full-text search on title and description
+    if (req.query.search) {
+      const escaped = escapeRegex(req.query.search.trim());
+      filter.$or = [
+        { title: { $regex: escaped, $options: 'i' } },
+        { description: { $regex: escaped, $options: 'i' } },
+      ];
+    }
+
+    // Job type filter (comma-separated support)
+    if (req.query.type) {
+      const types = req.query.type.split(',').map((t) => t.trim().toLowerCase());
+      filter.type = { $in: types };
+    }
+
+    // Location filter (partial match)
+    if (req.query.location) {
+      const escaped = escapeRegex(req.query.location.trim());
+      filter.location = { $regex: escaped, $options: 'i' };
+    }
+
+    // Skills filter (comma-separated, case-insensitive)
+    if (req.query.skill) {
+      const skillRegexes = req.query.skill
+        .split(',')
+        .map((s) => new RegExp(`^${escapeRegex(s.trim())}$`, 'i'));
+      filter.skills = { $in: skillRegexes };
+    }
+
+    // Salary range filters
+    if (req.query.salaryMin) {
+      const salaryMin = parseFloat(req.query.salaryMin);
+      if (!isNaN(salaryMin)) filter['salary.min'] = { $gte: salaryMin };
+    }
+
+    if (req.query.salaryMax) {
+      const salaryMax = parseFloat(req.query.salaryMax);
+      if (!isNaN(salaryMax)) filter['salary.max'] = { $lte: salaryMax };
+    }
+
+    // Experience level filter (enum validation)
+    if (req.query.experience && VALID_EXPERIENCE.includes(req.query.experience)) {
+      filter.experience = req.query.experience;
+    }
+
+    // Education level filter (enum validation)
+    if (req.query.education && VALID_EDUCATION.includes(req.query.education)) {
+      filter.education = req.query.education;
+    }
+
+    // Industry filter (requires User lookup for companyIndustry)
+    if (req.query.industry) {
+      const companyUsers = await User.find(
+        { role: 'company', companyIndustry: req.query.industry },
+        '_id'
+      );
+      const companyIds = companyUsers.map((u) => u._id);
+      filter.company = { $in: companyIds };
+    }
+
+    // Featured filter
+    if (req.query.featured === 'true') {
+      filter.isFeatured = true;
+    }
+
+    // Has deadline (future deadline) filter
+    if (req.query.hasDeadline === 'true') {
+      filter.deadline = { $gte: new Date() };
+    }
+
+    // Posted within filter (24h, 7d, 30d)
+    if (req.query.postedWithin) {
+      const threshold = getPostedWithinThreshold(req.query.postedWithin);
+      if (threshold) filter.createdAt = { $gte: threshold };
+    }
+
+    // Sort — validate against allowed list, default to newest
+    const sortKey = SORT_OPTIONS[req.query.sort] ? req.query.sort : 'newest';
+    const sortOption = SORT_OPTIONS[sortKey];
+
     const [jobs, total] = await Promise.all([
       Job.find(filter)
         .populate('company', COMPANY_POPULATE_FIELDS)
-        .sort({ isFeatured: -1, createdAt: -1 })
+        .sort(sortOption)
         .skip(skip)
         .limit(limit),
       Job.countDocuments(filter),
@@ -94,7 +206,93 @@ export const getAllJobs = async (req, res, next) => {
 
     const totalPages = Math.ceil(total / limit);
 
-    sendPaginated(res, jobs, { page, totalPages, total, limit });
+    sendPaginated(res, jobs, {
+      page,
+      totalPages,
+      total,
+      limit,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get aggregate job statistics for filter UI
+ * @route   GET /api/jobs/stats
+ * @access  Public
+ */
+export const getJobStats = async (req, res, next) => {
+  try {
+    const baseFilter = { isActive: true };
+
+    const [
+      totalJobs,
+      typeCounts,
+      experienceCounts,
+      topLocations,
+      topSkills,
+      salaryRange,
+    ] = await Promise.all([
+      Job.countDocuments(baseFilter),
+
+      Job.aggregate([
+        { $match: baseFilter },
+        { $group: { _id: '$type', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+
+      Job.aggregate([
+        { $match: baseFilter },
+        { $group: { _id: '$experience', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+      ]),
+
+      Job.aggregate([
+        { $match: baseFilter },
+        { $group: { _id: '$location', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+
+      Job.aggregate([
+        { $match: baseFilter },
+        { $unwind: '$skills' },
+        { $group: { _id: '$skills', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 20 },
+      ]),
+
+      Job.aggregate([
+        { $match: { ...baseFilter, 'salary.min': { $exists: true } } },
+        {
+          $group: {
+            _id: null,
+            minSalary: { $min: '$salary.min' },
+            maxSalary: { $max: '$salary.max' },
+          },
+        },
+      ]),
+    ]);
+
+    const formatCounts = (arr) =>
+      arr.reduce((acc, { _id, count }) => {
+        if (_id) acc[_id] = count;
+        return acc;
+      }, {});
+
+    sendSuccess(res, 200, {
+      totalJobs,
+      byType: formatCounts(typeCounts),
+      byExperience: formatCounts(experienceCounts),
+      topLocations: topLocations.map(({ _id, count }) => ({ location: _id, count })),
+      topSkills: topSkills.map(({ _id, count }) => ({ skill: _id, count })),
+      salaryRange: salaryRange[0]
+        ? { min: salaryRange[0].minSalary, max: salaryRange[0].maxSalary }
+        : { min: 0, max: 0 },
+    }, 'Job statistics retrieved successfully');
   } catch (error) {
     next(error);
   }

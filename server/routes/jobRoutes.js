@@ -3,6 +3,7 @@ import {
   createJob,
   getAllJobs,
   getJobBySlug,
+  getJobStats,
   getMyJobs,
   updateJob,
   deleteJob,
@@ -20,6 +21,7 @@ router.get('/my-jobs', protect, requireRole('company'), getMyJobs);
 
 // Public routes (static paths BEFORE parametric)
 router.get('/', optionalAuth, searchLimiter, getAllJobs);
+router.get('/stats', getJobStats);
 
 // Parametric routes
 router.get('/:slug', optionalAuth, getJobBySlug);
