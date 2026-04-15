@@ -12,6 +12,7 @@ import errorHandler from './middlewares/errorHandler.js';
 import authRoutes from './routes/authRoutes.js';
 import jobRoutes from './routes/jobRoutes.js';
 import applicationRoutes from './routes/applicationRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
 
 const app = express();
 
@@ -91,6 +92,7 @@ app.use(auditLogger);
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api', applicationRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // 12. Health check
 app.get('/api/health', (_req, res) => {
