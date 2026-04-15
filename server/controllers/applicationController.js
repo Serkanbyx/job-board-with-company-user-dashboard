@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse.js';
+import createNotification from '../utils/createNotification.js';
 
 const APPLICATION_ALLOWED_FIELDS = ['cvUrl', 'coverLetter', 'expectedSalary', 'availableFrom'];
 
@@ -79,7 +80,17 @@ export const applyToJob = async (req, res, next) => {
 
     await Job.findByIdAndUpdate(jobId, { $inc: { applicationCount: 1 } });
 
-    // TODO: Trigger notification for the company (Step 11)
+    const candidateName = `${req.user.firstName} ${req.user.lastName}`;
+    createNotification({
+      recipient: job.company,
+      sender: req.user._id,
+      type: 'new_application',
+      title: 'New Application',
+      message: `${candidateName} applied to ${job.title}`,
+      link: `/company/jobs/${jobId}/applications`,
+      relatedJob: jobId,
+      relatedApplication: application._id,
+    });
 
     sendSuccess(res, 201, { application }, 'Application submitted successfully');
   } catch (error) {
@@ -285,6 +296,21 @@ export const withdrawApplication = async (req, res, next) => {
 
     await Job.findByIdAndUpdate(application.job, { $inc: { applicationCount: -1 } });
 
+    const job = await Job.findById(application.job).select('title company');
+    if (job) {
+      const candidateName = `${req.user.firstName} ${req.user.lastName}`;
+      createNotification({
+        recipient: job.company,
+        sender: req.user._id,
+        type: 'application_withdrawn',
+        title: 'Application Withdrawn',
+        message: `${candidateName} withdrew their application for ${job.title}`,
+        link: `/company/jobs/${job._id}/applications`,
+        relatedJob: job._id,
+        relatedApplication: application._id,
+      });
+    }
+
     sendSuccess(res, 200, { application }, 'Application withdrawn successfully');
   } catch (error) {
     next(error);
@@ -350,7 +376,16 @@ export const updateApplicationStatus = async (req, res, next) => {
       })
       .populate('candidate', CANDIDATE_POPULATE_FIELDS);
 
-    // TODO: Trigger notification for the candidate (Step 11)
+    createNotification({
+      recipient: populatedApplication.candidate._id,
+      sender: req.user._id,
+      type: 'status_update',
+      title: 'Application Update',
+      message: `Your application for ${populatedApplication.job.title} has been ${status}`,
+      link: '/candidate/applications',
+      relatedJob: populatedApplication.job._id,
+      relatedApplication: populatedApplication._id,
+    });
 
     sendSuccess(res, 200, { application: populatedApplication }, 'Application status updated successfully');
   } catch (error) {

@@ -1,7 +1,9 @@
 import Job from '../models/Job.js';
 import User from '../models/User.js';
+import Application from '../models/Application.js';
 import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse.js';
 import escapeRegex from '../utils/escapeRegex.js';
+import createNotification from '../utils/createNotification.js';
 
 const JOB_WRITABLE_FIELDS = [
   'title',
@@ -474,8 +476,32 @@ export const toggleJobStatus = async (req, res, next) => {
       return sendError(res, 403, "You don't have permission to toggle this job.");
     }
 
+    const wasActive = job.isActive;
     job.isActive = !job.isActive;
     await job.save();
+
+    // Notify candidates when a job is deactivated
+    if (wasActive && !job.isActive) {
+      const activeStatuses = ['pending', 'reviewed', 'shortlisted', 'interviewed', 'offered'];
+      const affectedApplications = await Application.find({
+        job: job._id,
+        status: { $in: activeStatuses },
+      }).select('candidate');
+
+      const notificationPromises = affectedApplications.map((app) =>
+        createNotification({
+          recipient: app.candidate,
+          sender: req.user._id,
+          type: 'job_deactivated',
+          title: 'Job No Longer Active',
+          message: `The position ${job.title} is no longer accepting applications`,
+          link: '/candidate/applications',
+          relatedJob: job._id,
+          relatedApplication: app._id,
+        })
+      );
+      Promise.all(notificationPromises).catch(() => {});
+    }
 
     sendSuccess(
       res,

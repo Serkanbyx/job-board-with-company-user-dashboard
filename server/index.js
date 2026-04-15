@@ -15,6 +15,7 @@ import applicationRoutes from './routes/applicationRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import savedJobRoutes from './routes/savedJobRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 
 const app = express();
 
@@ -97,6 +98,7 @@ app.use('/api', applicationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/saved-jobs', savedJobRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 12. Health check
 app.get('/api/health', (_req, res) => {
