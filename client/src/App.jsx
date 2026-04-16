@@ -46,10 +46,12 @@ import ProfileSettingsPage from './pages/settings/ProfileSettingsPage';
 import AccountSettingsPage from './pages/settings/AccountSettingsPage';
 import NotificationSettingsPage from './pages/settings/NotificationSettingsPage';
 
+/* Admin Pages */
+import AdminDashboard from './pages/admin/AdminDashboard';
+
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
 const CandidateProfilePage = () => <Placeholder title="Candidate Profile" />;
-const AdminDashboard = () => <Placeholder title="Admin Dashboard" />;
 const ManageUsersPage = () => <Placeholder title="Manage Users" />;
 const ManageJobsPage = () => <Placeholder title="Manage Jobs" />;
 const ManageApplicationsPage = () => <Placeholder title="Manage Applications" />;
