@@ -51,6 +51,10 @@ const errorHandler = (err, req, res, _next) => {
     message = 'Something went wrong, please try again later';
   }
 
+  if (!isProduction) {
+    console.error(`❌ [${req.method}] ${req.originalUrl} → ${statusCode}:`, err.message);
+  }
+
   const response = {
     success: false,
     message,

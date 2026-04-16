@@ -15,7 +15,6 @@ import {
   ExternalLink,
   AlertTriangle,
   Clock,
-  Loader2,
 } from 'lucide-react';
 import * as userService from '../../api/userService';
 import { formatSalary, getJobTypeColor, truncateText } from '../../utils/helpers';

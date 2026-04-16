@@ -4,9 +4,7 @@ import {
   BarChart3,
   Clock,
   Percent,
-  TrendingUp,
   Eye,
-  Award,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as userService from '../../api/userService';

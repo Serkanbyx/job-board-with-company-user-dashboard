@@ -133,14 +133,17 @@ const ApplyModal = ({ isOpen, onClose, job, userCvUrl, onSuccess }) => {
   );
 
   useEffect(() => {
+    let focusTimer;
+
     if (isOpen) {
       resetState();
       document.addEventListener('keydown', handleKeyDown);
-      setTimeout(() => firstFocusRef.current?.focus(), 50);
+      focusTimer = setTimeout(() => firstFocusRef.current?.focus(), 50);
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
+      clearTimeout(focusTimer);
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };

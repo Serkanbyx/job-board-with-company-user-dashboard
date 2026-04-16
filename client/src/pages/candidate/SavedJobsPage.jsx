@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Heart, Bookmark, Search } from 'lucide-react';
+import { Bookmark } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import JobCard from '../../components/jobs/JobCard';

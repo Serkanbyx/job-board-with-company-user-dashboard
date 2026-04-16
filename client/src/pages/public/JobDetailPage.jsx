@@ -5,7 +5,6 @@ import {
   Briefcase,
   Clock,
   GraduationCap,
-  DollarSign,
   Building2,
   Calendar,
   Heart,

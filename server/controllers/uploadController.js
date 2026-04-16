@@ -46,7 +46,6 @@ export const uploadCVFile = async (req, res) => {
 
     return sendSuccess(res, 201, { url: result.secure_url, publicId: result.public_id }, 'CV uploaded successfully.');
   } catch (error) {
-    console.error('CV upload error:', error.message);
     return sendError(res, 500, 'Failed to upload CV. Please try again.');
   }
 };
@@ -84,7 +83,6 @@ export const uploadImageFile = async (req, res) => {
       'Image uploaded successfully.',
     );
   } catch (error) {
-    console.error('Image upload error:', error.message);
     return sendError(res, 500, 'Failed to upload image. Please try again.');
   }
 };
@@ -143,7 +141,6 @@ export const getSignedCvUrl = async (req, res) => {
 
     return sendError(res, 403, 'Access denied.');
   } catch (error) {
-    console.error('Signed URL generation error:', error.message);
     return sendError(res, 500, 'Failed to generate signed URL.');
   }
 };
@@ -182,7 +179,6 @@ export const deleteFile = async (req, res) => {
 
     return sendSuccess(res, 200, null, 'File deleted successfully.');
   } catch (error) {
-    console.error('File delete error:', error.message);
     return sendError(res, 500, 'Failed to delete file.');
   }
 };
