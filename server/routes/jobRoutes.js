@@ -34,7 +34,7 @@ router.get('/:slug', optionalAuth, getJobBySlug);
 router.get('/:slug/similar', getSimilarJobs);
 
 // Protected company routes (by ID)
-router.put('/:id', protect, requireRole('company'), updateJobValidator, validate, updateJob);
+router.put('/:id', protect, requireRole('company', 'admin'), updateJobValidator, validate, updateJob);
 router.delete('/:id', protect, requireRole('company', 'admin'), deleteJob);
 router.patch('/:id/toggle', protect, requireRole('company'), toggleJobStatus);
 

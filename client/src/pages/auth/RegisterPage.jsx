@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   UserSearch,
   Building2,
@@ -124,6 +124,7 @@ const FormSelect = ({ id, label, options, required, className = '', ...rest }) =
 const RegisterPage = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -147,6 +148,14 @@ const RegisterPage = () => {
     title: '',
     experienceLevel: '',
   });
+
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    if (roleParam && ['candidate', 'company'].includes(roleParam) && !formData.role) {
+      setFormData((prev) => ({ ...prev, role: roleParam }));
+      setStep(2);
+    }
+  }, [searchParams]);
 
   const passwordStrength = useMemo(
     () => getPasswordStrength(formData.password),

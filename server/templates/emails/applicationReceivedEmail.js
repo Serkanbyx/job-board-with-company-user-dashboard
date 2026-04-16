@@ -1,14 +1,24 @@
 import env from '../../config/env.js';
 import baseTemplate from './baseTemplate.js';
 
+const escapeHtml = (str) => {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 /**
  * Generates an email notifying a company about a new application.
  * Sent to the company's email address.
  */
 const applicationReceivedEmail = (company, candidate, job) => {
-  const companyName = company.firstName || 'Hiring Manager';
-  const candidateName = `${candidate.firstName} ${candidate.lastName}`;
-  const jobTitle = job.title;
+  const companyName = escapeHtml(company.firstName) || 'Hiring Manager';
+  const candidateName = escapeHtml(`${candidate.firstName} ${candidate.lastName}`);
+  const jobTitle = escapeHtml(job.title);
   const jobId = job._id;
 
   const html = baseTemplate(`

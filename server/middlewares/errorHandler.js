@@ -40,7 +40,11 @@ const errorHandler = (err, req, res, _next) => {
   if (err.name === 'MulterError') {
     statusCode = 400;
     if (err.code === 'LIMIT_FILE_SIZE') {
-      message = 'File too large. Maximum size is 5 MB';
+      const limitMB = err.storageErrors?.[0]?.maxSize
+        ? Math.round(err.storageErrors[0].maxSize / (1024 * 1024))
+        : null;
+      const fieldHint = err.field === 'image' ? 2 : err.field === 'cv' ? 5 : limitMB;
+      message = `File too large. Maximum size is ${fieldHint || 5} MB`;
     } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
       message = 'Unexpected file field';
     }

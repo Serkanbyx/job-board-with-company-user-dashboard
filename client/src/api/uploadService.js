@@ -24,3 +24,8 @@ export const deleteFile = (publicId, resourceType) =>
   axiosInstance
     .delete('/upload', { data: { publicId, resourceType } })
     .then((res) => res.data);
+
+export const getSignedCvUrl = (publicId) =>
+  axiosInstance
+    .get('/upload/cv/signed-url', { params: { publicId } })
+    .then((res) => res.data);

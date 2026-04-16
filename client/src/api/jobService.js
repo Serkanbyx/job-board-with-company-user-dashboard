@@ -10,7 +10,7 @@ export const getJobStats = () =>
   axiosInstance.get('/jobs/stats').then((res) => res.data);
 
 export const getMyJobs = (params) =>
-  axiosInstance.get('/jobs/my/listings', { params }).then((res) => res.data);
+  axiosInstance.get('/jobs/my-jobs', { params }).then((res) => res.data);
 
 export const createJob = (data) =>
   axiosInstance.post('/jobs', data).then((res) => res.data);
@@ -22,7 +22,7 @@ export const deleteJob = (id) =>
   axiosInstance.delete(`/jobs/${id}`).then((res) => res.data);
 
 export const toggleJobStatus = (id) =>
-  axiosInstance.patch(`/jobs/${id}/toggle-status`).then((res) => res.data);
+  axiosInstance.patch(`/jobs/${id}/toggle`).then((res) => res.data);
 
-export const getSimilarJobs = (id) =>
-  axiosInstance.get(`/jobs/${id}/similar`).then((res) => res.data);
+export const getSimilarJobs = (slug) =>
+  axiosInstance.get(`/jobs/${slug}/similar`).then((res) => res.data);

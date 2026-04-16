@@ -30,7 +30,7 @@ const STATUS_TABS = [
 
 const SORT_OPTIONS = [
   { value: 'newest', label: 'Newest' },
-  { value: 'oldest', label: 'Most Applications' },
+  { value: 'oldest', label: 'Oldest' },
 ];
 
 /* ─────────────────── Actions Dropdown ─────────────────── */

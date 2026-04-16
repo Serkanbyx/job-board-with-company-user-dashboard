@@ -111,7 +111,12 @@ export const optionalAuth = async (req, _res, next) => {
     const decoded = verifyAccessToken(token);
     const user = await User.findById(decoded.id);
 
-    if (user && user.isActive && decoded.v === user.tokenVersion) {
+    if (
+      user &&
+      user.isActive &&
+      decoded.v === user.tokenVersion &&
+      !user.changedPasswordAfter(decoded.iat)
+    ) {
       req.user = user;
     } else {
       req.user = null;

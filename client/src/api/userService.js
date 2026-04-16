@@ -7,10 +7,10 @@ export const getCandidateProfile = (userId) =>
   axiosInstance.get(`/users/candidate/${userId}`).then((res) => res.data);
 
 export const getCandidateDashboardStats = () =>
-  axiosInstance.get('/users/candidate/dashboard-stats').then((res) => res.data);
+  axiosInstance.get('/users/candidate/dashboard').then((res) => res.data);
 
 export const getCompanyDashboardStats = () =>
-  axiosInstance.get('/users/company/dashboard-stats').then((res) => res.data);
+  axiosInstance.get('/users/company/dashboard').then((res) => res.data);
 
 export const getCompanyAnalytics = () =>
   axiosInstance.get('/users/company/analytics').then((res) => res.data);

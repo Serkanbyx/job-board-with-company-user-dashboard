@@ -1,6 +1,16 @@
 import env from '../../config/env.js';
 import baseTemplate from './baseTemplate.js';
 
+const escapeHtml = (str) => {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
 const STATUS_COLORS = {
   reviewed: '#f59e0b',
   shortlisted: '#22c55e',
@@ -15,9 +25,9 @@ const STATUS_COLORS = {
  * Status is displayed with a contextual color badge.
  */
 const statusUpdateEmail = (candidate, job, newStatus, note) => {
-  const candidateName = candidate.firstName || 'there';
-  const jobTitle = job.title;
-  const companyName = job.company?.companyName || 'the employer';
+  const candidateName = escapeHtml(candidate.firstName) || 'there';
+  const jobTitle = escapeHtml(job.title);
+  const companyName = escapeHtml(job.company?.companyName) || 'the employer';
   const statusColor = STATUS_COLORS[newStatus] || '#6b7280';
   const statusLabel = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
 
@@ -25,7 +35,7 @@ const statusUpdateEmail = (candidate, job, newStatus, note) => {
     ? `
       <div style="margin:16px 0 24px; padding:16px; background-color:#f9fafb; border-left:4px solid ${statusColor}; border-radius:4px;">
         <p style="margin:0 0 4px; color:#6b7280; font-size:13px; font-weight:600;">Note from the employer:</p>
-        <p style="margin:0; color:#374151; font-size:14px; line-height:1.5;">${note}</p>
+        <p style="margin:0; color:#374151; font-size:14px; line-height:1.5;">${escapeHtml(note)}</p>
       </div>
     `
     : '';

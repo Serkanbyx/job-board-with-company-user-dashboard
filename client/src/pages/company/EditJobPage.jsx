@@ -18,18 +18,24 @@ const EditJobPage = () => {
   useEffect(() => {
     const fetchJob = async () => {
       try {
-        const data = await jobService.getMyJobs({});
-        const jobs = data.jobs || data.data || [];
-        const found = jobs.find((j) => j._id === id);
+        let found = null;
+        let page = 1;
+        const limit = 50;
+
+        while (!found) {
+          const data = await jobService.getMyJobs({ page, limit });
+          const jobs = data.jobs || data.data || [];
+
+          found = jobs.find((j) => j._id === id);
+          if (found) break;
+
+          const pagination = data.pagination;
+          if (!pagination || page >= pagination.totalPages || jobs.length === 0) break;
+          page++;
+        }
 
         if (!found) {
           toast.error('Job not found or you do not have permission to edit it');
-          navigate('/company/dashboard');
-          return;
-        }
-
-        if (found.company?._id && user?.company?._id && found.company._id !== user.company._id) {
-          toast.error('You do not have permission to edit this job');
           navigate('/company/dashboard');
           return;
         }

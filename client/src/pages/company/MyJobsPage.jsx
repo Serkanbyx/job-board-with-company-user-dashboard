@@ -158,17 +158,14 @@ const MyJobsPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [tabCounts, setTabCounts] = useState({ all: 0, active: 0, inactive: 0 });
   const [togglingId, setTogglingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
   const activeTab = searchParams.get('status') || 'all';
 
-  /* ── Counts for tabs ── */
-  const counts = useMemo(() => {
-    const active = jobs.filter((j) => j.isActive).length;
-    return { all: jobs.length, active, inactive: jobs.length - active };
-  }, [jobs]);
+  const counts = tabCounts;
 
   /* ── Client-side filtering by search query ── */
   const filteredJobs = useMemo(() => {
@@ -185,9 +182,18 @@ const MyJobsPage = () => {
       if (activeTab !== 'all') params.status = activeTab;
 
       const data = await jobService.getMyJobs(params);
-      setJobs(data.jobs || data.data || []);
-      setTotalPages(data.totalPages || 1);
-      setTotalItems(data.total || data.totalJobs || 0);
+      const jobList = data.jobs || data.data || [];
+      setJobs(jobList);
+      setTotalPages(data.pagination?.totalPages || data.totalPages || 1);
+      setTotalItems(data.pagination?.total || data.total || data.totalJobs || 0);
+
+      if (data.totalJobs !== undefined || data.activeJobs !== undefined) {
+        const all = data.totalJobs ?? data.pagination?.total ?? jobList.length;
+        const active = data.activeJobs ?? jobList.filter((j) => j.isActive).length;
+        setTabCounts({ all, active, inactive: all - active });
+      } else {
+        setTabCounts((prev) => ({ ...prev, [activeTab]: data.pagination?.total || jobList.length }));
+      }
     } catch (error) {
       toast.error(error.message || 'Failed to load jobs');
     } finally {

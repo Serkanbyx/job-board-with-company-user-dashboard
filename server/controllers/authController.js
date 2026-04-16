@@ -120,6 +120,7 @@ export const login = async (req, res, next) => {
     }
 
     if (user.isLocked) {
+      await bcrypt.compare(password, user.password || '$2a$12$dummyhashfortimingequaliz');
       return sendError(
         res,
         423,
@@ -470,9 +471,9 @@ export const deleteAccount = async (req, res, next) => {
         const SavedJob = (await import('../models/SavedJob.js')).default;
         const Notification = (await import('../models/Notification.js')).default;
 
-        await Application.deleteMany({ applicant: user._id });
-        await SavedJob.deleteMany({ user: user._id });
-        await Notification.deleteMany({ user: user._id });
+        await Application.deleteMany({ candidate: user._id });
+        await SavedJob.deleteMany({ candidate: user._id });
+        await Notification.deleteMany({ recipient: user._id });
       }
     } catch {
       // Models may not exist yet in early development — continue with user deletion
@@ -482,7 +483,7 @@ export const deleteAccount = async (req, res, next) => {
     try {
       const Notification = (await import('../models/Notification.js')).default;
       await Notification.deleteMany({
-        $or: [{ user: user._id }, { sender: user._id }],
+        $or: [{ recipient: user._id }, { sender: user._id }],
       });
     } catch {
       // Model may not exist yet
