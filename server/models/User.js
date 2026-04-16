@@ -173,8 +173,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Indexes
-userSchema.index({ email: 1 }, { unique: true });
+// Indexes (email index is already created by `unique: true` in schema definition)
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 userSchema.index({ skills: 1 });
