@@ -124,18 +124,14 @@ export const getCompanyPublicProfile = async (req, res, next) => {
       return sendError(res, 404, 'Company not found.');
     }
 
-    const [activeJobCount, recentJobs] = await Promise.all([
-      Job.countDocuments({ company: id, isActive: true }),
-      Job.find({ company: id, isActive: true })
-        .select('title slug type location salary deadline createdAt')
-        .sort({ createdAt: -1 })
-        .limit(6),
-    ]);
+    const activeJobs = await Job.find({ company: id, isActive: true })
+      .select('title slug type location salary skills deadline createdAt')
+      .sort({ createdAt: -1 });
 
     sendSuccess(
       res,
       200,
-      { company, activeJobCount, recentJobs },
+      { company, activeJobCount: activeJobs.length, activeJobs },
       'Company profile retrieved successfully'
     );
   } catch (error) {
