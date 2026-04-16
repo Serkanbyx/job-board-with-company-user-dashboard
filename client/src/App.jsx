@@ -24,10 +24,10 @@ import RegisterPage from './pages/auth/RegisterPage';
 /* Public Pages */
 import HomePage from './pages/public/HomePage';
 import JobListPage from './pages/public/JobListPage';
+import JobDetailPage from './pages/public/JobDetailPage';
 
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
-const JobDetailPage = () => <Placeholder title="Job Detail" />;
 const CompanyProfilePage = () => <Placeholder title="Company Profile" />;
 const CandidateDashboard = () => <Placeholder title="Candidate Dashboard" />;
 const MyApplicationsPage = () => <Placeholder title="My Applications" />;
