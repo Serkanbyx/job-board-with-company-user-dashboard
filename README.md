@@ -475,17 +475,17 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Developer
 
-**Serkan Bayraktar**
+**Serkanby**
 
-- [Website](https://serkanbayraktar.com/)
-- [GitHub](https://github.com/Serkanbyx)
-- [Email](mailto:serkanbyx1@gmail.com)
+- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
+- GitHub: [@Serkanbyx](https://github.com/Serkanbyx)
+- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
 
 ## Contact
 
-- **Issues:** [GitHub Issues](https://github.com/Serkanbyx/job-board/issues)
-- **Email:** [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
-- **Website:** [serkanbayraktar.com](https://serkanbayraktar.com/)
+- [Open an Issue](https://github.com/Serkanbyx/job-board/issues)
+- Email: [serkanbyx1@gmail.com](mailto:serkanbyx1@gmail.com)
+- Website: [serkanbayraktar.com](https://serkanbayraktar.com/)
 
 ---
 

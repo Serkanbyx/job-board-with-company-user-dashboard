@@ -31,6 +31,29 @@ const Footer = () => {
           </Link>
         </nav>
       </div>
+
+      <div className="border-t border-slate-200 dark:border-slate-700">
+        <p className="py-3 text-center text-xs text-slate-400 dark:text-slate-500">
+          Created by{' '}
+          <a
+            href="https://serkanbayraktar.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary-500 transition-colors hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300"
+          >
+            Serkanby
+          </a>
+          {' | '}
+          <a
+            href="https://github.com/Serkanbyx"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary-500 transition-colors hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300"
+          >
+            Github
+          </a>
+        </p>
+      </div>
     </footer>
   );
 };
