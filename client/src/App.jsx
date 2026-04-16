@@ -27,13 +27,15 @@ import JobListPage from './pages/public/JobListPage';
 import JobDetailPage from './pages/public/JobDetailPage';
 import CompanyProfilePage from './pages/public/CompanyProfilePage';
 
+/* Company Pages */
+import CompanyDashboard from './pages/company/CompanyDashboard';
+
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
 const CandidateDashboard = () => <Placeholder title="Candidate Dashboard" />;
 const MyApplicationsPage = () => <Placeholder title="My Applications" />;
 const SavedJobsPage = () => <Placeholder title="Saved Jobs" />;
 const CandidateProfilePage = () => <Placeholder title="Candidate Profile" />;
-const CompanyDashboard = () => <Placeholder title="Company Dashboard" />;
 const MyJobsPage = () => <Placeholder title="My Jobs" />;
 const CreateJobPage = () => <Placeholder title="Post a Job" />;
 const EditJobPage = () => <Placeholder title="Edit Job" />;
