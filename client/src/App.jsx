@@ -48,13 +48,13 @@ import NotificationSettingsPage from './pages/settings/NotificationSettingsPage'
 
 /* Admin Pages */
 import AdminDashboard from './pages/admin/AdminDashboard';
+import ManageUsersPage from './pages/admin/ManageUsersPage';
+import ManageJobsPage from './pages/admin/ManageJobsPage';
+import ManageApplicationsPage from './pages/admin/ManageApplicationsPage';
 
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
 const CandidateProfilePage = () => <Placeholder title="Candidate Profile" />;
-const ManageUsersPage = () => <Placeholder title="Manage Users" />;
-const ManageJobsPage = () => <Placeholder title="Manage Jobs" />;
-const ManageApplicationsPage = () => <Placeholder title="Manage Applications" />;
 const NotFoundPage = () => <Placeholder title="404 — Page Not Found" />;
 
 const App = () => {
