@@ -112,20 +112,20 @@ const ApplicationDetailModal = ({ application, onClose }) => {
             </div>
           )}
 
-          {/* Resume */}
-          {application.resume && (
+          {/* CV */}
+          {application.cvUrl && (
             <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-700">
               <div className="mb-2 text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Resume
+                CV / Resume
               </div>
               <a
-                href={application.resume}
+                href={application.cvUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
               >
                 <ExternalLink className="h-3.5 w-3.5" />
-                View Resume
+                View CV
               </a>
             </div>
           )}

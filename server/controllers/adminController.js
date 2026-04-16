@@ -402,10 +402,20 @@ export const getAllJobsAdmin = async (req, res, next) => {
       filter.isFeatured = req.query.isFeatured === 'true';
     }
 
+    const SORT_OPTIONS = {
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      'name-asc': { title: 1 },
+      'name-desc': { title: -1 },
+    };
+
+    const sortKey = SORT_OPTIONS[req.query.sort] ? req.query.sort : 'newest';
+    const sortOption = SORT_OPTIONS[sortKey];
+
     const [jobs, total] = await Promise.all([
       Job.find(filter)
         .populate('company', 'companyName companyLogo firstName lastName email')
-        .sort({ createdAt: -1 })
+        .sort(sortOption)
         .skip(skip)
         .limit(limit),
       Job.countDocuments(filter),
@@ -508,16 +518,84 @@ export const getAllApplicationsAdmin = async (req, res, next) => {
       filter.candidate = req.query.candidateId;
     }
 
-    const [applications, total] = await Promise.all([
-      Application.find(filter)
-        .populate('job', 'title')
-        .populate('candidate', 'firstName lastName email')
-        .populate('company', 'companyName')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-      Application.countDocuments(filter),
-    ]);
+    const searchTerm = req.query.search?.trim();
+    const useAggregation = !!searchTerm;
+
+    let applications;
+    let total;
+
+    if (useAggregation) {
+      const escaped = escapeRegex(searchTerm);
+      const searchRegex = new RegExp(escaped, 'i');
+
+      const pipeline = [
+        { $match: filter },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'candidate',
+            foreignField: '_id',
+            as: 'candidate',
+            pipeline: [{ $project: { firstName: 1, lastName: 1, email: 1 } }],
+          },
+        },
+        { $unwind: { path: '$candidate', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'jobs',
+            localField: 'job',
+            foreignField: '_id',
+            as: 'job',
+            pipeline: [{ $project: { title: 1, slug: 1 } }],
+          },
+        },
+        { $unwind: { path: '$job', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'company',
+            foreignField: '_id',
+            as: 'company',
+            pipeline: [{ $project: { companyName: 1 } }],
+          },
+        },
+        { $unwind: { path: '$company', preserveNullAndEmptyArrays: true } },
+        {
+          $match: {
+            $or: [
+              { 'candidate.firstName': searchRegex },
+              { 'candidate.lastName': searchRegex },
+              { 'candidate.email': searchRegex },
+              { 'job.title': searchRegex },
+              { 'company.companyName': searchRegex },
+            ],
+          },
+        },
+        { $sort: { createdAt: -1 } },
+      ];
+
+      const countPipeline = [...pipeline, { $count: 'total' }];
+      const dataPipeline = [...pipeline, { $skip: skip }, { $limit: limit }];
+
+      const [countResult, data] = await Promise.all([
+        Application.aggregate(countPipeline),
+        Application.aggregate(dataPipeline),
+      ]);
+
+      total = countResult[0]?.total || 0;
+      applications = data;
+    } else {
+      [applications, total] = await Promise.all([
+        Application.find(filter)
+          .populate('job', 'title')
+          .populate('candidate', 'firstName lastName email')
+          .populate('company', 'companyName')
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit),
+        Application.countDocuments(filter),
+      ]);
+    }
 
     const totalPages = Math.ceil(total / limit);
 

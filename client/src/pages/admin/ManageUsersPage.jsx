@@ -121,9 +121,9 @@ const UserDetailModal = ({ user, onClose }) => {
         </button>
 
         <div className="mb-4 flex items-center gap-4">
-          {user.profileImage || user.companyLogo ? (
+          {user.avatar || user.companyLogo ? (
             <img
-              src={user.profileImage || user.companyLogo}
+              src={user.avatar || user.companyLogo}
               alt={fullName}
               className="h-14 w-14 rounded-full object-cover"
             />
@@ -161,10 +161,10 @@ const UserDetailModal = ({ user, onClose }) => {
                 <span className="text-slate-500 dark:text-slate-400">Jobs Posted</span>
                 <span className="font-medium text-slate-700 dark:text-slate-300">{user.jobCount ?? 0}</span>
               </div>
-              {user.industry && (
+              {user.companyIndustry && (
                 <div className="flex justify-between border-b border-slate-100 pb-2 dark:border-slate-700">
                   <span className="text-slate-500 dark:text-slate-400">Industry</span>
-                  <span className="text-slate-700 dark:text-slate-300">{user.industry}</span>
+                  <span className="text-slate-700 dark:text-slate-300">{user.companyIndustry}</span>
                 </div>
               )}
             </>
@@ -299,8 +299,8 @@ const MobileUserCard = ({ user, currentUserId, togglingId, onToggleStatus, onVie
     <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
       <div className="mb-3 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          {user.profileImage || user.companyLogo ? (
-            <img src={user.profileImage || user.companyLogo} alt={fullName} className="h-10 w-10 rounded-full object-cover" />
+          {user.avatar || user.companyLogo ? (
+            <img src={user.avatar || user.companyLogo} alt={fullName} className="h-10 w-10 rounded-full object-cover" />
           ) : (
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
               {getInitials(user.firstName, user.lastName)}
@@ -582,8 +582,8 @@ const ManageUsersPage = () => {
                       {/* User */}
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          {u.profileImage || u.companyLogo ? (
-                            <img src={u.profileImage || u.companyLogo} alt={fullName} className="h-9 w-9 rounded-full object-cover" />
+                          {u.avatar || u.companyLogo ? (
+                            <img src={u.avatar || u.companyLogo} alt={fullName} className="h-9 w-9 rounded-full object-cover" />
                           ) : (
                             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700 dark:bg-primary-900/30 dark:text-primary-400">
                               {getInitials(u.firstName, u.lastName)}
