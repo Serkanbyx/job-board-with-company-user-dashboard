@@ -4,9 +4,6 @@ import {
   MapPin,
   Building2,
   Globe,
-  Linkedin,
-  Twitter,
-  Facebook,
   Users,
   Calendar,
   Briefcase,
@@ -16,6 +13,7 @@ import {
   AlertTriangle,
   Clock,
 } from 'lucide-react';
+import { Linkedin, Twitter, Facebook } from '../../components/common/SocialIcons';
 import * as userService from '../../api/userService';
 import { formatSalary, getJobTypeColor, truncateText } from '../../utils/helpers';
 import { formatDate, formatRelativeDate, isExpired, daysUntil } from '../../utils/formatDate';

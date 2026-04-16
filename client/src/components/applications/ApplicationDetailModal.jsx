@@ -9,11 +9,10 @@ import {
   Phone,
   Calendar,
   DollarSign,
-  Linkedin,
-  Github,
   Globe,
   Save,
 } from 'lucide-react';
+import { Linkedin, Github } from '../common/SocialIcons';
 import toast from 'react-hot-toast';
 import * as applicationService from '../../api/applicationService';
 import { APPLICATION_STATUSES, STATUS_TRANSITIONS } from '../../utils/constants';
