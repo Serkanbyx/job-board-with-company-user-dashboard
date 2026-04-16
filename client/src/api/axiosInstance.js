@@ -68,13 +68,15 @@ axiosInstance.interceptors.response.use(
           { refreshToken },
         );
 
-        localStorage.setItem('jb_access_token', data.accessToken);
-        localStorage.setItem('jb_refresh_token', data.refreshToken);
+        const { accessToken, refreshToken: newRefreshToken } = data.data;
 
-        axiosInstance.defaults.headers.common.Authorization = `Bearer ${data.accessToken}`;
-        originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+        localStorage.setItem('jb_access_token', accessToken);
+        localStorage.setItem('jb_refresh_token', newRefreshToken);
 
-        processQueue(null, data.accessToken);
+        axiosInstance.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+        processQueue(null, accessToken);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);

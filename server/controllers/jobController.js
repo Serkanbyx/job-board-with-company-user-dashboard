@@ -448,7 +448,7 @@ export const deleteJob = async (req, res, next) => {
 
     try {
       const Notification = (await import('../models/Notification.js')).default;
-      await Notification.deleteMany({ job: job._id });
+      await Notification.deleteMany({ relatedJob: job._id });
     } catch { /* Model not yet created */ }
 
     await Job.findByIdAndDelete(job._id);

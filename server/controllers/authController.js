@@ -278,12 +278,12 @@ export const getMe = async (req, res, next) => {
       const Job = (await import('../models/Job.js')).default;
       responseData.activeJobCount = await Job.countDocuments({
         company: user._id,
-        status: 'active',
+        isActive: true,
       });
     } else if (user.role === 'candidate') {
       const Application = (await import('../models/Application.js')).default;
       responseData.applicationCount = await Application.countDocuments({
-        applicant: user._id,
+        candidate: user._id,
       });
     }
 
@@ -463,7 +463,7 @@ export const deleteAccount = async (req, res, next) => {
 
         const jobIds = await Job.find({ company: user._id }).distinct('_id');
         await Application.deleteMany({ job: { $in: jobIds } });
-        await Notification.deleteMany({ job: { $in: jobIds } });
+        await Notification.deleteMany({ relatedJob: { $in: jobIds } });
         await SavedJob.deleteMany({ job: { $in: jobIds } });
         await Job.deleteMany({ company: user._id });
       } else if (user.role === 'candidate') {
