@@ -7,7 +7,7 @@ export const getJobBySlug = (slug) =>
   axiosInstance.get(`/jobs/${slug}`).then((res) => res.data);
 
 export const getJobStats = () =>
-  axiosInstance.get('/jobs/stats/overview').then((res) => res.data);
+  axiosInstance.get('/jobs/stats').then((res) => res.data);
 
 export const getMyJobs = (params) =>
   axiosInstance.get('/jobs/my/listings', { params }).then((res) => res.data);

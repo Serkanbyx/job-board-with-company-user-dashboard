@@ -21,10 +21,11 @@ import ScrollToTop from './components/common/ScrollToTop';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 
+/* Public Pages */
+import HomePage from './pages/public/HomePage';
+
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
-
-const HomePage = () => <Placeholder title="Home" />;
 const JobListPage = () => <Placeholder title="Find Jobs" />;
 const JobDetailPage = () => <Placeholder title="Job Detail" />;
 const CompanyProfilePage = () => <Placeholder title="Company Profile" />;
