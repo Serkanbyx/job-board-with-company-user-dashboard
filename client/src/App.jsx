@@ -37,10 +37,10 @@ import CompanyAnalyticsPage from './pages/company/CompanyAnalyticsPage';
 
 /* Candidate Pages */
 import CandidateDashboard from './pages/candidate/CandidateDashboard';
+import MyApplicationsPage from './pages/candidate/MyApplicationsPage';
 
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
-const MyApplicationsPage = () => <Placeholder title="My Applications" />;
 const SavedJobsPage = () => <Placeholder title="Saved Jobs" />;
 const CandidateProfilePage = () => <Placeholder title="Candidate Profile" />;
 const AdminDashboard = () => <Placeholder title="Admin Dashboard" />;
