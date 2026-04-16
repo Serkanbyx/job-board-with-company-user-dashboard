@@ -374,6 +374,7 @@ export const getCompanyAnalytics = async (req, res, next) => {
       weeklyTimelineResult,
       avgTimeToHireResult,
       skillsDemandResult,
+      totalJobs,
     ] = await Promise.all([
       // Hiring funnel
       Application.aggregate([
@@ -441,6 +442,9 @@ export const getCompanyAnalytics = async (req, res, next) => {
         { $sort: { count: -1 } },
         { $limit: 10 },
       ]),
+
+      // Total jobs count
+      Job.countDocuments({ company: companyId }),
     ]);
 
     // Build hiring funnel with conversion rates
@@ -492,6 +496,8 @@ export const getCompanyAnalytics = async (req, res, next) => {
       res,
       200,
       {
+        totalApplications,
+        totalJobs,
         hiringFunnel,
         topPerformingJobs,
         weeklyTimeline,

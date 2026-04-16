@@ -33,6 +33,7 @@ import MyJobsPage from './pages/company/MyJobsPage';
 import CreateJobPage from './pages/company/CreateJobPage';
 import EditJobPage from './pages/company/EditJobPage';
 import JobApplicationsPage from './pages/company/JobApplicationsPage';
+import CompanyAnalyticsPage from './pages/company/CompanyAnalyticsPage';
 
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
@@ -40,7 +41,6 @@ const CandidateDashboard = () => <Placeholder title="Candidate Dashboard" />;
 const MyApplicationsPage = () => <Placeholder title="My Applications" />;
 const SavedJobsPage = () => <Placeholder title="Saved Jobs" />;
 const CandidateProfilePage = () => <Placeholder title="Candidate Profile" />;
-const CompanyAnalyticsPage = () => <Placeholder title="Company Analytics" />;
 const AdminDashboard = () => <Placeholder title="Admin Dashboard" />;
 const ManageUsersPage = () => <Placeholder title="Manage Users" />;
 const ManageJobsPage = () => <Placeholder title="Manage Jobs" />;
