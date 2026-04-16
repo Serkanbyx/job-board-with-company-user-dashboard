@@ -28,5 +28,5 @@ export const updateProfile = (data) =>
 export const changePassword = (data) =>
   axiosInstance.put('/auth/change-password', data).then((res) => res.data);
 
-export const deleteAccount = () =>
-  axiosInstance.delete('/auth/account').then((res) => res.data);
+export const deleteAccount = (data) =>
+  axiosInstance.delete('/auth/account', { data }).then((res) => res.data);

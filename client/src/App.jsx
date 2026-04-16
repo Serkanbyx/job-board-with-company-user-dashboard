@@ -40,6 +40,12 @@ import CandidateDashboard from './pages/candidate/CandidateDashboard';
 import MyApplicationsPage from './pages/candidate/MyApplicationsPage';
 import SavedJobsPage from './pages/candidate/SavedJobsPage';
 
+/* Settings Pages */
+import SettingsLayout from './components/layout/SettingsLayout';
+import ProfileSettingsPage from './pages/settings/ProfileSettingsPage';
+import AccountSettingsPage from './pages/settings/AccountSettingsPage';
+import NotificationSettingsPage from './pages/settings/NotificationSettingsPage';
+
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
 const CandidateProfilePage = () => <Placeholder title="Candidate Profile" />;
@@ -47,9 +53,6 @@ const AdminDashboard = () => <Placeholder title="Admin Dashboard" />;
 const ManageUsersPage = () => <Placeholder title="Manage Users" />;
 const ManageJobsPage = () => <Placeholder title="Manage Jobs" />;
 const ManageApplicationsPage = () => <Placeholder title="Manage Applications" />;
-const ProfileSettingsPage = () => <Placeholder title="Profile Settings" />;
-const AccountSettingsPage = () => <Placeholder title="Account Settings" />;
-const NotificationSettingsPage = () => <Placeholder title="Notification Settings" />;
 const NotFoundPage = () => <Placeholder title="404 — Page Not Found" />;
 
 const App = () => {
@@ -122,9 +125,11 @@ const App = () => {
         {/* Settings (any authenticated user) */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
-            <Route path="/settings/profile" element={<ProfileSettingsPage />} />
-            <Route path="/settings/account" element={<AccountSettingsPage />} />
-            <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
+            <Route element={<SettingsLayout />}>
+              <Route path="/settings/profile" element={<ProfileSettingsPage />} />
+              <Route path="/settings/account" element={<AccountSettingsPage />} />
+              <Route path="/settings/notifications" element={<NotificationSettingsPage />} />
+            </Route>
           </Route>
         </Route>
 
