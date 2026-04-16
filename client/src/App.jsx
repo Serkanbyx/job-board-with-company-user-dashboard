@@ -17,6 +17,10 @@ import AdminRoute from './components/guards/AdminRoute';
 /* Common */
 import ScrollToTop from './components/common/ScrollToTop';
 
+/* Auth Pages */
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
 
@@ -24,8 +28,6 @@ const HomePage = () => <Placeholder title="Home" />;
 const JobListPage = () => <Placeholder title="Find Jobs" />;
 const JobDetailPage = () => <Placeholder title="Job Detail" />;
 const CompanyProfilePage = () => <Placeholder title="Company Profile" />;
-const LoginPage = () => <Placeholder title="Login" />;
-const RegisterPage = () => <Placeholder title="Register" />;
 const CandidateDashboard = () => <Placeholder title="Candidate Dashboard" />;
 const MyApplicationsPage = () => <Placeholder title="My Applications" />;
 const SavedJobsPage = () => <Placeholder title="Saved Jobs" />;
