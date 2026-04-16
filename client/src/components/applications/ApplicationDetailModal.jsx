@@ -116,14 +116,14 @@ const ApplicationDetailModal = ({ isOpen, onClose, application, onStatusUpdate }
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+        className="animate-backdrop-in absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div
         ref={modalRef}
-        className="relative z-10 flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white shadow-2xl animate-in slide-in-from-right duration-300 dark:bg-slate-800"
+        className="animate-slide-in-right relative z-10 flex h-full w-full max-w-2xl flex-col overflow-y-auto bg-white shadow-2xl dark:bg-slate-800"
       >
         {/* Header */}
         <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4 dark:border-slate-700 dark:bg-slate-800">
@@ -416,7 +416,7 @@ const ApplicationDetailModal = ({ isOpen, onClose, application, onStatusUpdate }
                     aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
                   >
                     <Star
-                      className={`h-6 w-6 ${
+                      className={`h-6 w-6 transition-colors duration-150 ${
                         star <= (hoverRating || rating)
                           ? 'fill-amber-400 text-amber-400'
                           : 'text-slate-300 dark:text-slate-600'

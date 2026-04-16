@@ -123,7 +123,10 @@ const Navbar = () => {
                 >
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger-500 px-1 text-[10px] font-bold text-white">
+                    <span
+                      key={unreadCount}
+                      className="animate-badge-bounce absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger-500 px-1 text-[10px] font-bold text-white"
+                    >
                       {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                   )}
@@ -158,7 +161,7 @@ const Navbar = () => {
                 </button>
 
                 {userDropdownOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800">
+                  <div className="animate-dropdown-in absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800">
                     <div className="border-b border-slate-200 px-4 py-3 dark:border-slate-700">
                       <p className="text-sm font-semibold text-slate-900 dark:text-white">
                         {user?.firstName} {user?.lastName}
@@ -232,10 +235,10 @@ const Navbar = () => {
       {mobileMenuOpen && (
         <>
           <div
-            className="fixed inset-0 top-16 z-30 bg-black/30 md:hidden"
+            className="animate-backdrop-in fixed inset-0 top-16 z-30 bg-black/30 md:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="fixed top-16 right-0 bottom-0 z-40 w-72 overflow-y-auto border-l border-slate-200 bg-white p-4 shadow-lg md:hidden dark:border-slate-700 dark:bg-slate-900">
+          <div className="animate-slide-in-right fixed top-16 right-0 bottom-0 z-40 w-72 overflow-y-auto border-l border-slate-200 bg-white p-4 shadow-lg md:hidden dark:border-slate-700 dark:bg-slate-900">
             <div className="flex flex-col gap-1">
               <Link
                 to="/jobs"

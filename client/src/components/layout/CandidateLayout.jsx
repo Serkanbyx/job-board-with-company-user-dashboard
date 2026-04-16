@@ -89,10 +89,10 @@ const CandidateLayout = () => {
       {sidebarOpen && (
         <>
           <div
-            className="fixed inset-0 top-16 z-40 bg-black/30 lg:hidden"
+            className="animate-backdrop-in fixed inset-0 top-16 z-40 bg-black/30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
           />
-          <aside className="fixed top-16 left-0 z-50 h-[calc(100vh-4rem)] w-64 overflow-y-auto border-r border-slate-200 bg-white shadow-lg lg:hidden dark:border-slate-700 dark:bg-slate-900">
+          <aside className="animate-slide-in-left fixed top-16 left-0 z-50 h-[calc(100vh-4rem)] w-64 overflow-y-auto border-r border-slate-200 bg-white shadow-lg lg:hidden dark:border-slate-700 dark:bg-slate-900">
             <button
               onClick={() => setSidebarOpen(false)}
               aria-label="Close sidebar"

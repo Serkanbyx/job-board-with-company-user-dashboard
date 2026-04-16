@@ -65,7 +65,7 @@ const SettingsLayout = () => {
         </button>
 
         {mobileOpen && (
-          <div className="absolute z-20 mt-1 w-full rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
+          <div className="animate-dropdown-in absolute z-20 mt-1 w-full rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
             {TABS.map(({ path, label, icon: Icon }) => (
               <NavLink
                 key={path}

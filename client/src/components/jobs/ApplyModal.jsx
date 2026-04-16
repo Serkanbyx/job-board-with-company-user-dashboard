@@ -235,14 +235,14 @@ const ApplyModal = ({ isOpen, onClose, job, userCvUrl, onSuccess }) => {
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        className="animate-backdrop-in absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={handleClose}
       />
 
       {/* Modal */}
       <div
         ref={modalRef}
-        className="relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col rounded-xl bg-white shadow-xl dark:bg-slate-800"
+        className="animate-modal-in relative z-10 flex max-h-[90vh] w-full max-w-lg flex-col rounded-xl bg-white shadow-xl dark:bg-slate-800"
       >
         {/* Header */}
         <div className="flex items-start justify-between p-5 pb-0">

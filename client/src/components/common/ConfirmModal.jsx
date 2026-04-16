@@ -78,14 +78,14 @@ const ConfirmModal = ({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+        className="animate-backdrop-in absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={() => !isLoading && onClose()}
       />
 
       {/* Modal card */}
       <div
         ref={modalRef}
-        className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl animate-in zoom-in-95 fade-in duration-200 dark:bg-slate-800"
+        className="animate-modal-in relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-800"
       >
         {/* Close button */}
         <button

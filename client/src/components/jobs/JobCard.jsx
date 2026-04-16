@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Briefcase, DollarSign, Building2, Calendar, Heart } from 'lucide-react';
 import { formatSalary, getJobTypeColor, truncateText } from '../../utils/helpers';
@@ -31,9 +32,13 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
   const companyName = company?.companyName || `${company?.firstName || ''} ${company?.lastName || ''}`.trim();
   const companyId = company?._id || company?.id;
 
+  const [heartAnimating, setHeartAnimating] = useState(false);
+
   const handleSaveClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    setHeartAnimating(true);
+    setTimeout(() => setHeartAnimating(false), 350);
     onToggleSave?.(_id);
   };
 
@@ -46,7 +51,7 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
         aria-label={isSaved ? 'Unsave job' : 'Save job'}
       >
         <Heart
-          className={`h-4 w-4 transition-colors ${
+          className={`h-4 w-4 transition-colors ${heartAnimating ? 'animate-heart-pop' : ''} ${
             isSaved
               ? 'fill-pink-500 text-pink-500'
               : 'text-slate-400 group-hover/save:text-pink-500'

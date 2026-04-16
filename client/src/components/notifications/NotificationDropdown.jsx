@@ -32,7 +32,7 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:w-96 dark:border-slate-700 dark:bg-slate-800"
+      className="animate-dropdown-in absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:w-96 dark:border-slate-700 dark:bg-slate-800"
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-700">

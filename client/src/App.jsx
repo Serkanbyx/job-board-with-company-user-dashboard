@@ -65,8 +65,19 @@ const App = () => {
         position="top-right"
         toastOptions={{
           duration: 3000,
-          className: 'dark:bg-slate-800 dark:text-white',
+          className:
+            '!rounded-xl !shadow-lg !border !border-slate-200 !text-sm dark:!bg-slate-800 dark:!text-white dark:!border-slate-700',
+          success: {
+            duration: 3000,
+            iconTheme: { primary: '#22c55e', secondary: '#fff' },
+          },
+          error: {
+            duration: 5000,
+            iconTheme: { primary: '#ef4444', secondary: '#fff' },
+          },
         }}
+        containerStyle={{ top: 16, right: 16 }}
+        gutter={8}
       />
 
       <Routes>

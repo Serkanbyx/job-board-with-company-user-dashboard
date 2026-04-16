@@ -60,13 +60,153 @@
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Shake animation for form error feedback */
+/* ===== Animations ===== */
+
+/* Shake — form error feedback */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
   20%, 40%, 60%, 80% { transform: translateX(4px); }
 }
-
 .animate-shake {
   animation: shake 0.5s ease-in-out;
+}
+
+/* Fade-in — page transitions, general reveal */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fadeIn 0.35s ease-out both;
+}
+
+/* Scale + fade — modals */
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes modalOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.95); }
+}
+.animate-modal-in {
+  animation: modalIn 0.2s ease-out both;
+}
+.animate-modal-out {
+  animation: modalOut 0.15s ease-in both;
+}
+
+/* Backdrop fade */
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-backdrop-in {
+  animation: backdropIn 0.2s ease-out both;
+}
+
+/* Slide-in from left — mobile sidebars */
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slide-in-left {
+  animation: slideInLeft 0.25s ease-out both;
+}
+
+/* Slide-in from right — mobile menus */
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slideInRight 0.25s ease-out both;
+}
+
+/* Dropdown — fade + slight translate-y */
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-dropdown-in {
+  animation: dropdownIn 0.15s ease-out both;
+}
+
+/* Bounce — notification badge */
+@keyframes badgeBounce {
+  0%, 100% { transform: scale(1); }
+  30%      { transform: scale(1.35); }
+  60%      { transform: scale(0.9); }
+  80%      { transform: scale(1.1); }
+}
+.animate-badge-bounce {
+  animation: badgeBounce 0.4s ease-in-out;
+}
+
+/* Heart pop — save/unsave */
+@keyframes heartPop {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.3); }
+  60%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+.animate-heart-pop {
+  animation: heartPop 0.35s ease-in-out;
+}
+
+/* Highlight flash — status change on rows */
+@keyframes highlightFlash {
+  0%   { background-color: var(--color-primary-100); }
+  100% { background-color: transparent; }
+}
+.animate-highlight {
+  animation: highlightFlash 1.5s ease-out both;
+}
+.dark .animate-highlight {
+  animation: none;
+  background-color: transparent;
+}
+@keyframes highlightFlashDark {
+  0%   { background-color: rgba(59, 130, 246, 0.15); }
+  100% { background-color: transparent; }
+}
+.dark .animate-highlight {
+  animation: highlightFlashDark 1.5s ease-out both;
+}
+
+/* Skeleton pulse — refined shimmer */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+.animate-skeleton {
+  animation: skeletonPulse 1.8s ease-in-out infinite;
+}
+
+/* ===== Micro-interactions ===== */
+
+/* Button press — subtle scale-down */
+button:active:not(:disabled),
+a:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Form field focus — smooth border transition */
+input, textarea, select {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Card hover — shadow increase (already via Tailwind, reinforce with transition) */
+.card-hover-shadow {
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+/* Scroll-to-top button */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.25s ease-out both;
 }
