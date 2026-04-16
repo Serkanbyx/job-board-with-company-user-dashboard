@@ -133,6 +133,7 @@ const App = () => {
               <Route path="/admin/users" element={<ManageUsersPage />} />
               <Route path="/admin/jobs" element={<ManageJobsPage />} />
               <Route path="/admin/applications" element={<ManageApplicationsPage />} />
+              <Route path="/admin/analytics" element={<Placeholder title="Platform Analytics" />} />
             </Route>
           </Route>
         </Route>

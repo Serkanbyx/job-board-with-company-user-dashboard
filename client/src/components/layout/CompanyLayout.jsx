@@ -29,20 +29,20 @@ const CompanyLayout = () => {
     <div className="flex h-full flex-col">
       {/* Company identity */}
       <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-5 dark:border-slate-700">
-        {user?.company?.logo ? (
+        {user?.companyLogo ? (
           <img
-            src={user.company.logo}
-            alt={user.company.name}
+            src={user.companyLogo}
+            alt={user.companyName}
             className="h-10 w-10 rounded-lg object-cover"
           />
         ) : (
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-100 text-sm font-bold text-primary-700 dark:bg-primary-900 dark:text-primary-300">
-            {getInitials(user?.company?.name || user?.firstName, user?.lastName)}
+            {getInitials(user?.companyName || user?.firstName, user?.lastName)}
           </div>
         )}
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">
-            {user?.company?.name || `${user?.firstName} ${user?.lastName}`}
+            {user?.companyName || `${user?.firstName} ${user?.lastName}`}
           </p>
           <p className="text-xs text-slate-500 dark:text-slate-400">Company</p>
         </div>

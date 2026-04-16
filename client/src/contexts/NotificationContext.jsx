@@ -14,8 +14,8 @@ export const NotificationProvider = ({ children }) => {
 
   const refreshUnreadCount = useCallback(async () => {
     try {
-      const data = await notificationService.getUnreadCount();
-      setUnreadCount(data.count);
+      const response = await notificationService.getUnreadCount();
+      setUnreadCount(response.data.count);
     } catch {
       // Silently fail — polling will retry
     }

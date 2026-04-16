@@ -66,8 +66,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const data = await authService.getMe();
-        setUser(data.user);
+        const response = await authService.getMe();
+        setUser(response.data.user);
       } catch {
         clearTokens();
       } finally {
@@ -80,22 +80,24 @@ export const AuthProvider = ({ children }) => {
 
   const login = useCallback(
     async (credentials) => {
-      const data = await authService.login(credentials);
-      localStorage.setItem('jb_access_token', data.accessToken);
-      localStorage.setItem('jb_refresh_token', data.refreshToken);
-      setUser(data.user);
-      return data;
+      const response = await authService.login(credentials);
+      const { user: userData, accessToken, refreshToken } = response.data;
+      localStorage.setItem('jb_access_token', accessToken);
+      localStorage.setItem('jb_refresh_token', refreshToken);
+      setUser(userData);
+      return response;
     },
     [],
   );
 
   const register = useCallback(
     async (formData) => {
-      const data = await authService.register(formData);
-      localStorage.setItem('jb_access_token', data.accessToken);
-      localStorage.setItem('jb_refresh_token', data.refreshToken);
-      setUser(data.user);
-      return data;
+      const response = await authService.register(formData);
+      const { user: userData, accessToken, refreshToken } = response.data;
+      localStorage.setItem('jb_access_token', accessToken);
+      localStorage.setItem('jb_refresh_token', refreshToken);
+      setUser(userData);
+      return response;
     },
     [],
   );

@@ -57,6 +57,9 @@ const Navbar = () => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
         setUserDropdownOpen(false);
       }
+      if (notificationRef.current && !notificationRef.current.contains(e.target)) {
+        setNotificationOpen(false);
+      }
     };
 
     const handleEscape = (e) => {

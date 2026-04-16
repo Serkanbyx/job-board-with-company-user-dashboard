@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import ErrorBoundary from '../common/ErrorBoundary';
 import { User, Shield, Bell, ChevronDown } from 'lucide-react';
 
@@ -18,6 +18,7 @@ const tabLinkClass = ({ isActive }) =>
 
 const SettingsLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { pathname } = useLocation();
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
@@ -50,7 +51,7 @@ const SettingsLayout = () => {
           <span className="flex items-center gap-2">
             {(() => {
               const active = TABS.find(({ path }) =>
-                location.pathname.startsWith(path)
+                pathname.startsWith(path)
               );
               if (!active) return 'Settings';
               const ActiveIcon = active.icon;
