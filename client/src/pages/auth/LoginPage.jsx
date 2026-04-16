@@ -80,6 +80,8 @@ const LoginPage = () => {
                 name="email"
                 type="email"
                 required
+                aria-required="true"
+                autoComplete="email"
                 placeholder="you@example.com"
                 value={formData.email}
                 onChange={handleChange}
@@ -100,6 +102,8 @@ const LoginPage = () => {
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 required
+                aria-required="true"
+                autoComplete="current-password"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}

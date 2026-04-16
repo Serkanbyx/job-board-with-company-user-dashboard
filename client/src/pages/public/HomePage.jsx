@@ -327,10 +327,12 @@ const HomePage = () => {
 
           {/* Tab toggle */}
           <div className="mb-10 flex justify-center">
-            <div className="inline-flex rounded-lg bg-white p-1 shadow-sm dark:bg-slate-800">
+            <div role="tablist" aria-label="How it works" className="inline-flex rounded-lg bg-white p-1 shadow-sm dark:bg-slate-800">
               {['candidates', 'companies'].map((tab) => (
                 <button
                   key={tab}
+                  role="tab"
+                  aria-selected={activeTab === tab}
                   onClick={() => setActiveTab(tab)}
                   className={`rounded-md px-5 py-2 text-sm font-medium transition-colors ${
                     activeTab === tab
@@ -345,7 +347,7 @@ const HomePage = () => {
           </div>
 
           {/* Steps */}
-          <div className="grid gap-8 md:grid-cols-3">
+          <div role="tabpanel" aria-label={`Steps for ${activeTab}`} className="grid gap-8 md:grid-cols-3">
             {HOW_IT_WORKS[activeTab].map((step, index) => (
               <div
                 key={step.title}

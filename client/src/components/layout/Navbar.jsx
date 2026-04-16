@@ -51,7 +51,7 @@ const Navbar = () => {
     setNotificationOpen(false);
   }, []);
 
-  // Close dropdowns on outside click
+  // Close dropdowns on outside click or Escape
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (userDropdownRef.current && !userDropdownRef.current.contains(e.target)) {
@@ -59,9 +59,20 @@ const Navbar = () => {
       }
     };
 
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') {
+        closeAllDropdowns();
+        setMobileMenuOpen(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [closeAllDropdowns]);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -78,8 +89,8 @@ const Navbar = () => {
   const dashboardLink = user ? DASHBOARD_ROUTES[user.role] || '/' : '/';
 
   return (
-    <nav className="fixed top-0 right-0 left-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/80">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <header className="fixed top-0 right-0 left-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/80">
+      <nav aria-label="Main navigation" className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Left — Logo */}
         <Link to="/" className="flex items-center gap-2">
           <Briefcase className="h-6 w-6 text-primary-600" />
@@ -119,6 +130,8 @@ const Navbar = () => {
                     setUserDropdownOpen(false);
                   }}
                   aria-label="Notifications"
+                  aria-expanded={notificationOpen}
+                  aria-haspopup="true"
                   className="relative rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                 >
                   <Bell className="h-5 w-5" />
@@ -144,6 +157,9 @@ const Navbar = () => {
                     setUserDropdownOpen((prev) => !prev);
                     setNotificationOpen(false);
                   }}
+                  aria-expanded={userDropdownOpen}
+                  aria-haspopup="true"
+                  aria-label="User menu"
                   className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   {user?.avatar ? (
@@ -223,13 +239,15 @@ const Navbar = () => {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileMenuOpen((prev) => !prev)}
-            aria-label="Toggle menu"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-menu"
             className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 md:hidden dark:text-slate-400 dark:hover:bg-slate-800"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
-      </div>
+      </nav>
 
       {/* Mobile drawer */}
       {mobileMenuOpen && (
@@ -238,7 +256,7 @@ const Navbar = () => {
             className="animate-backdrop-in fixed inset-0 top-16 z-30 bg-black/30 md:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div className="animate-slide-in-right fixed top-16 right-0 bottom-0 z-40 w-72 overflow-y-auto border-l border-slate-200 bg-white p-4 shadow-lg md:hidden dark:border-slate-700 dark:bg-slate-900">
+          <div id="mobile-menu" className="animate-slide-in-right fixed top-16 right-0 bottom-0 z-40 w-72 overflow-y-auto border-l border-slate-200 bg-white p-4 shadow-lg md:hidden dark:border-slate-700 dark:bg-slate-900">
             <div className="flex flex-col gap-1">
               <Link
                 to="/jobs"
@@ -322,7 +340,7 @@ const Navbar = () => {
           </div>
         </>
       )}
-    </nav>
+    </header>
   );
 };
 

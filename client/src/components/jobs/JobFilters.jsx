@@ -17,6 +17,7 @@ const FilterAccordion = ({ title, count, defaultOpen = false, children }) => {
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
+        aria-expanded={isOpen}
         className="flex w-full items-center justify-between text-sm font-medium text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-300 dark:hover:text-white"
       >
         <span className="flex items-center gap-2">

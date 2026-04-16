@@ -180,6 +180,9 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
     const validationErrors = validate(form);
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
+      const firstErrorField = Object.keys(validationErrors)[0];
+      const el = document.getElementById(firstErrorField);
+      if (el) setTimeout(() => el.focus(), 50);
       return;
     }
 
@@ -200,8 +203,16 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
 
   const fieldError = (field) =>
     touched[field] && errors[field] ? (
-      <p className="mt-1 text-xs text-danger-600 dark:text-red-400">{errors[field]}</p>
+      <p id={`${field}-error`} role="alert" className="mt-1 text-xs text-danger-600 dark:text-red-400">{errors[field]}</p>
     ) : null;
+
+  const ariaProps = (field, required = false) => ({
+    ...(required && { 'aria-required': true }),
+    ...(touched[field] && errors[field] && {
+      'aria-invalid': true,
+      'aria-describedby': `${field}-error`,
+    }),
+  });
 
   /* ─── Input base classes ─── */
   const inputBase =
@@ -263,6 +274,7 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
                   onBlur={() => handleBlur('title')}
                   placeholder="e.g. Senior Frontend Developer"
                   className={getInputClass('title')}
+                  {...ariaProps('title', true)}
                 />
                 {fieldError('title')}
               </div>
@@ -281,6 +293,7 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
                   placeholder="Describe the role, expectations and company culture..."
                   className={`resize-y ${getInputClass('description')}`}
                   maxLength={DESCRIPTION_MAX}
+                  {...ariaProps('description', true)}
                 />
                 <div className="mt-1 flex items-center justify-between">
                   {fieldError('description') || <span />}
@@ -365,6 +378,7 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
                   onChange={(e) => handleChange('type', e.target.value)}
                   onBlur={() => handleBlur('type')}
                   className={getInputClass('type')}
+                  {...ariaProps('type', true)}
                 >
                   <option value="">Select type</option>
                   {JOB_TYPES.map((t) => (
@@ -387,6 +401,7 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
                   onBlur={() => handleBlur('location')}
                   placeholder="e.g. Istanbul, Turkey"
                   className={getInputClass('location')}
+                  {...ariaProps('location', true)}
                 />
                 {fieldError('location')}
               </div>

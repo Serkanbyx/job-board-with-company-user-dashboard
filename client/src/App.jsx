@@ -52,10 +52,12 @@ import ManageUsersPage from './pages/admin/ManageUsersPage';
 import ManageJobsPage from './pages/admin/ManageJobsPage';
 import ManageApplicationsPage from './pages/admin/ManageApplicationsPage';
 
+/* Public Pages — 404 */
+import NotFoundPage from './pages/public/NotFoundPage';
+
 /* Placeholder — will be replaced with real page components */
 import Placeholder from './pages/Placeholder';
 const CandidateProfilePage = () => <Placeholder title="Candidate Profile" />;
-const NotFoundPage = () => <Placeholder title="404 — Page Not Found" />;
 
 const App = () => {
   return (
@@ -147,7 +149,9 @@ const App = () => {
         </Route>
 
         {/* 404 */}
-        <Route path="*" element={<NotFoundPage />} />
+        <Route element={<MainLayout />}>
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
       </Routes>
     </>
   );

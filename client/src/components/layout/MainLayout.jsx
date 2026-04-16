@@ -8,8 +8,11 @@ const MainLayout = () => {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
       <Navbar />
-      <main className="grow pt-16">
+      <main id="main-content" className="grow pt-16">
         <ErrorBoundary>
           <div key={pathname} className="animate-fade-in">
             <Outlet />

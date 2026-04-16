@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
+import ErrorBoundary from '../common/ErrorBoundary';
 import { User, Shield, Bell, ChevronDown } from 'lucide-react';
 
 const TABS = [
@@ -42,6 +43,8 @@ const SettingsLayout = () => {
         <button
           type="button"
           onClick={() => setMobileOpen((prev) => !prev)}
+          aria-expanded={mobileOpen}
+          aria-haspopup="true"
           className="flex w-full items-center justify-between rounded-lg border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition-colors dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
         >
           <span className="flex items-center gap-2">
@@ -87,7 +90,9 @@ const SettingsLayout = () => {
         )}
       </div>
 
-      <Outlet />
+      <ErrorBoundary>
+        <Outlet />
+      </ErrorBoundary>
     </div>
   );
 };

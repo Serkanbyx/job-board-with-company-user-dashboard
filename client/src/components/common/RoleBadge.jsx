@@ -16,9 +16,14 @@ const ROLE_CONFIG = {
 const RoleBadge = ({ role }) => {
   const config = ROLE_CONFIG[role] || ROLE_CONFIG.candidate;
 
+  const label = role.charAt(0).toUpperCase() + role.slice(1);
+
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${config.bg} ${config.text}`}>
-      {role.charAt(0).toUpperCase() + role.slice(1)}
+    <span
+      aria-label={`Role: ${label}`}
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${config.bg} ${config.text}`}
+    >
+      {label}
     </span>
   );
 };

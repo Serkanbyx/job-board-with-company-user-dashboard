@@ -10,7 +10,7 @@ const Footer = () => {
           <span>&copy; {new Date().getFullYear()} JobBoard. All rights reserved.</span>
         </div>
 
-        <nav className="flex items-center gap-6">
+        <nav aria-label="Footer navigation" className="flex items-center gap-6">
           <Link
             to="/about"
             className="text-sm text-slate-500 transition-colors hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"

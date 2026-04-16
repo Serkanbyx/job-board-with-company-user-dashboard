@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
+import ErrorBoundary from '../common/ErrorBoundary';
 import {
   LayoutDashboard,
   FileText,
@@ -46,7 +47,7 @@ const CandidateLayout = () => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav aria-label="Candidate navigation" className="flex-1 space-y-1 px-3 py-4">
         {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
@@ -108,7 +109,9 @@ const CandidateLayout = () => {
       {/* Content area */}
       <div className="w-full lg:ml-64">
         <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </div>
       </div>
     </div>

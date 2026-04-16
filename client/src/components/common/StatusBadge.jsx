@@ -69,10 +69,15 @@ const StatusBadge = ({ status, size = 'sm' }) => {
   const config = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
   const Icon = config.icon;
 
+  const label = status.charAt(0).toUpperCase() + status.slice(1);
+
   return (
-    <span className={`inline-flex items-center rounded-full font-medium ${config.bg} ${config.text} ${SIZE_MAP[size]}`}>
-      <Icon className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} />
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+    <span
+      aria-label={`Status: ${label}`}
+      className={`inline-flex items-center rounded-full font-medium ${config.bg} ${config.text} ${SIZE_MAP[size]}`}
+    >
+      <Icon className={size === 'sm' ? 'h-3 w-3' : 'h-3.5 w-3.5'} aria-hidden="true" />
+      {label}
     </span>
   );
 };

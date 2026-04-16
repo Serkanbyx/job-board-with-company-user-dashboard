@@ -6,12 +6,14 @@ const SIZE_MAP = {
 
 const Spinner = ({ size = 'md', fullPage = false, text = '' }) => {
   const spinner = (
-    <div className="flex flex-col items-center justify-center gap-3">
+    <div className="flex flex-col items-center justify-center gap-3" aria-live="polite">
       <div
         role="status"
         aria-label="Loading"
         className={`${SIZE_MAP[size]} animate-spin rounded-full border-primary-200 border-t-primary-600 dark:border-slate-600 dark:border-t-primary-400`}
-      />
+      >
+        <span className="sr-only">Loading...</span>
+      </div>
       {text && (
         <p className="text-sm text-slate-500 dark:text-slate-400">{text}</p>
       )}
