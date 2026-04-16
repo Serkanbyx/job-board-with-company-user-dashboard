@@ -69,6 +69,19 @@ export const POSTED_WITHIN_OPTIONS = [
   { value: '30d', label: 'Last 30 Days' },
 ];
 
+export const SALARY_CURRENCIES = [
+  { value: 'USD', label: 'USD ($)' },
+  { value: 'EUR', label: 'EUR (€)' },
+  { value: 'GBP', label: 'GBP (£)' },
+  { value: 'TRY', label: 'TRY (₺)' },
+];
+
+export const SALARY_PERIODS = [
+  { value: 'hourly', label: 'Hourly' },
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'yearly', label: 'Yearly' },
+];
+
 export const STATUS_TRANSITIONS = {
   pending: ['reviewed', 'rejected'],
   reviewed: ['shortlisted', 'rejected'],
