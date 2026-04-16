@@ -63,8 +63,8 @@ const userSchema = new mongoose.Schema(
     },
 
     // Account security fields
-    loginAttempts: { type: Number, default: 0 },
-    lockUntil: { type: Date, default: null },
+    loginAttempts: { type: Number, default: 0, select: false },
+    lockUntil: { type: Date, default: null, select: false },
     passwordHistory: { type: [String], select: false },
     passwordChangedAt: { type: Date },
     tokenVersion: { type: Number, default: 0 },
@@ -205,14 +205,9 @@ userSchema.set('toJSON', {
 });
 
 // Pre-save hook — Mongoose 9 compatible (no next parameter)
+// Password history is managed in the changePassword controller (where the old hash is available)
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
-
-  if (this.passwordHistory === undefined) this.passwordHistory = [];
-  if (this.password && !this.isNew) {
-    const currentHash = this.password;
-    this.passwordHistory = [currentHash, ...this.passwordHistory].slice(0, 5);
-  }
 
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);

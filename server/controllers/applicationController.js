@@ -3,6 +3,7 @@ import Application from '../models/Application.js';
 import Job from '../models/Job.js';
 import { sendSuccess, sendError, sendPaginated } from '../utils/apiResponse.js';
 import createNotification from '../utils/createNotification.js';
+import escapeRegex from '../utils/escapeRegex.js';
 import User from '../models/User.js';
 import sendEmail from '../services/emailService.js';
 import applicationReceivedEmail from '../templates/emails/applicationReceivedEmail.js';
@@ -196,9 +197,9 @@ export const getJobApplications = async (req, res, next) => {
       .skip(skip)
       .limit(limit);
 
-    // Candidate name search
+    // Candidate name search (escaped to prevent ReDoS)
     if (req.query.search) {
-      const searchRegex = new RegExp(req.query.search, 'i');
+      const searchRegex = new RegExp(escapeRegex(req.query.search.trim()), 'i');
 
       const matchingApplications = await Application.find(filter)
         .populate('candidate', CANDIDATE_POPULATE_FIELDS)

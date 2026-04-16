@@ -401,6 +401,10 @@ export const changePassword = async (req, res, next) => {
       );
     }
 
+    // Push OLD hash to history before overwriting with new plaintext
+    if (!user.passwordHistory) user.passwordHistory = [];
+    user.passwordHistory = [user.password, ...user.passwordHistory].slice(0, 5);
+
     user.password = newPassword;
     user.tokenVersion += 1;
     await user.save();
