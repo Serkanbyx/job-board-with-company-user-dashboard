@@ -265,7 +265,6 @@ const candidateUsers = [
 const buildJobs = (companyMap) => {
   const now = new Date();
   const future = (days) => new Date(now.getTime() + days * 86400000);
-  const past = (days) => new Date(now.getTime() - days * 86400000);
 
   return [
     // ─── TechNova Solutions (4) ───
@@ -434,7 +433,7 @@ const buildJobs = (companyMap) => {
       education: 'bachelor',
       department: 'Quality Assurance',
       positions: 1,
-      deadline: past(5),
+      deadline: future(5),
       isActive: false,
       isFeatured: false,
       views: 45,
@@ -585,7 +584,7 @@ const buildJobs = (companyMap) => {
       education: 'any',
       department: 'Content',
       positions: 1,
-      deadline: past(3),
+      deadline: future(3),
       isActive: false,
       isFeatured: false,
       views: 56,
