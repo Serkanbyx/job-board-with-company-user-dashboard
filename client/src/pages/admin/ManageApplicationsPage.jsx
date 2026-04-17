@@ -159,17 +159,22 @@ const ApplicationDetailModal = ({ application, onClose }) => {
 /* ─────────────────── Mobile Application Card ─────────────────── */
 
 const MobileApplicationCard = ({ application, onViewDetails }) => {
-  const candidateName = `${application.candidate?.firstName || ''} ${application.candidate?.lastName || ''}`.trim();
+  const candidateName =
+    `${application.candidate?.firstName || ''} ${application.candidate?.lastName || ''}`.trim() ||
+    application.candidate?.email ||
+    'Unknown candidate';
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
       <div className="mb-3 flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
             {getInitials(application.candidate?.firstName, application.candidate?.lastName)}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{candidateName || 'Unknown'}</p>
+            <p className="truncate text-sm font-semibold text-slate-900 dark:text-white" title={candidateName}>
+              {candidateName}
+            </p>
             <p className="truncate text-xs text-slate-500 dark:text-slate-400">{application.job?.title || 'Unknown Job'}</p>
           </div>
         </div>
@@ -292,19 +297,32 @@ const ManageApplicationsPage = () => {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                 {applications.map((app) => {
-                  const candidateName = `${app.candidate?.firstName || ''} ${app.candidate?.lastName || ''}`.trim();
+                  const candidateName =
+                    `${app.candidate?.firstName || ''} ${app.candidate?.lastName || ''}`.trim() ||
+                    app.candidate?.email ||
+                    'Unknown candidate';
 
                   return (
-                    <tr key={app._id} className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-750">
+                    <tr key={app._id} className="transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/40">
                       {/* Candidate */}
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                             {getInitials(app.candidate?.firstName, app.candidate?.lastName)}
                           </div>
-                          <span className="font-medium text-slate-900 dark:text-white">
-                            {candidateName || 'Unknown'}
-                          </span>
+                          <div className="min-w-0">
+                            <p
+                              className="truncate font-medium text-slate-900 dark:text-white"
+                              title={candidateName}
+                            >
+                              {candidateName}
+                            </p>
+                            {app.candidate?.email && (
+                              <p className="truncate text-xs text-slate-500 dark:text-slate-400">
+                                {app.candidate.email}
+                              </p>
+                            )}
+                          </div>
                         </div>
                       </td>
 

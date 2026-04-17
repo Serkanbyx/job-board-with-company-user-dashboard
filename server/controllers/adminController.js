@@ -382,14 +382,6 @@ export const getAllJobsAdmin = async (req, res, next) => {
 
     const filter = {};
 
-    if (req.query.search) {
-      const escaped = escapeRegex(req.query.search.trim());
-      filter.$or = [
-        { title: { $regex: escaped, $options: 'i' } },
-        { description: { $regex: escaped, $options: 'i' } },
-      ];
-    }
-
     if (req.query.type) {
       filter.type = req.query.type;
     }
@@ -411,6 +403,66 @@ export const getAllJobsAdmin = async (req, res, next) => {
 
     const sortKey = SORT_OPTIONS[req.query.sort] ? req.query.sort : 'newest';
     const sortOption = SORT_OPTIONS[sortKey];
+
+    const searchTerm = req.query.search?.trim();
+
+    // Use aggregation when searching so we can match against the populated
+    // company name as well as the job title/description in a single query.
+    if (searchTerm) {
+      const escaped = escapeRegex(searchTerm);
+      const searchRegex = new RegExp(escaped, 'i');
+
+      const pipeline = [
+        { $match: filter },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'company',
+            foreignField: '_id',
+            as: 'company',
+            pipeline: [
+              {
+                $project: {
+                  companyName: 1,
+                  companyLogo: 1,
+                  firstName: 1,
+                  lastName: 1,
+                  email: 1,
+                },
+              },
+            ],
+          },
+        },
+        { $unwind: { path: '$company', preserveNullAndEmptyArrays: true } },
+        {
+          $match: {
+            $or: [
+              { title: searchRegex },
+              { description: searchRegex },
+              { 'company.companyName': searchRegex },
+            ],
+          },
+        },
+        { $sort: sortOption },
+      ];
+
+      const [countResult, jobs] = await Promise.all([
+        Job.aggregate([...pipeline, { $count: 'total' }]),
+        Job.aggregate([...pipeline, { $skip: skip }, { $limit: limit }]),
+      ]);
+
+      const total = countResult[0]?.total || 0;
+      const totalPages = Math.ceil(total / limit);
+
+      return sendPaginated(res, jobs, {
+        page,
+        totalPages,
+        total,
+        limit,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      });
+    }
 
     const [jobs, total] = await Promise.all([
       Job.find(filter)

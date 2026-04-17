@@ -55,6 +55,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import ManageUsersPage from './pages/admin/ManageUsersPage';
 import ManageJobsPage from './pages/admin/ManageJobsPage';
 import ManageApplicationsPage from './pages/admin/ManageApplicationsPage';
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 
 /* Public Pages — 404 */
 import NotFoundPage from './pages/public/NotFoundPage';
@@ -143,7 +144,7 @@ const App = () => {
               <Route path="/admin/users" element={<ManageUsersPage />} />
               <Route path="/admin/jobs" element={<ManageJobsPage />} />
               <Route path="/admin/applications" element={<ManageApplicationsPage />} />
-              <Route path="/admin/analytics" element={<Placeholder title="Platform Analytics" />} />
+              <Route path="/admin/analytics" element={<AdminAnalyticsPage />} />
             </Route>
           </Route>
         </Route>

@@ -297,7 +297,7 @@ const ManageJobsPage = () => {
             <SearchInput
               value={searchQuery}
               onChange={setSearchQuery}
-              placeholder="Search by job title..."
+              placeholder="Search by job title, description, or company..."
             />
           </div>
           <select

@@ -680,7 +680,12 @@ const ManageUsersPage = () => {
                           </span>
                         )}
                         {u.role === 'admin' && (
-                          <span className="text-slate-400">—</span>
+                          <span
+                            className="inline-flex items-center gap-1 text-xs italic text-slate-400 dark:text-slate-500"
+                            title="Admin accounts are not tracked for jobs or applications"
+                          >
+                            <Shield className="h-3.5 w-3.5" /> No activity tracked
+                          </span>
                         )}
                       </td>
 

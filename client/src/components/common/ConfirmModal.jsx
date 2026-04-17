@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { X } from 'lucide-react';
+import useLockBodyScroll from '../../hooks/useLockBodyScroll';
 
 const VARIANT_STYLES = {
   danger: 'bg-danger-600 hover:bg-danger-700 focus:ring-danger-500',
@@ -53,6 +54,8 @@ const ConfirmModal = ({
     [isLoading, onClose]
   );
 
+  useLockBodyScroll(isOpen);
+
   useEffect(() => {
     let focusTimer;
 
@@ -60,13 +63,11 @@ const ConfirmModal = ({
       setInputValue('');
       document.addEventListener('keydown', handleKeyDown);
       focusTimer = setTimeout(() => firstFocusRef.current?.focus(), 50);
-      document.body.style.overflow = 'hidden';
     }
 
     return () => {
       clearTimeout(focusTimer);
       document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = '';
     };
   }, [isOpen, handleKeyDown]);
 
