@@ -8,7 +8,19 @@ import Notification from '../models/Notification.js';
 
 dotenv.config();
 
-const FORCE = process.argv.includes('--force');
+const ADMIN_ONLY = process.argv.includes('--admin-only');
+
+/* ------------------------------------------------------------------ */
+/*  ADMIN CONFIG                                                       */
+/* ------------------------------------------------------------------ */
+
+const getAdminConfig = () => ({
+  firstName: process.env.ADMIN_FIRST_NAME || 'Admin',
+  lastName: process.env.ADMIN_LAST_NAME || 'User',
+  email: process.env.ADMIN_EMAIL || 'admin@jobboard.com',
+  password: process.env.ADMIN_PASSWORD || 'Admin123!',
+  role: 'admin',
+});
 
 /* ------------------------------------------------------------------ */
 /*  DEMO DATA                                                          */
@@ -250,7 +262,6 @@ const candidateUsers = [
   },
 ];
 
-// Jobs: 4 per company = 20 total
 const buildJobs = (companyMap) => {
   const now = new Date();
   const future = (days) => new Date(now.getTime() + days * 86400000);
@@ -729,215 +740,246 @@ const weightedStatus = () => {
 };
 
 /* ------------------------------------------------------------------ */
-/*  MAIN SEED FUNCTION                                                 */
+/*  SEED: ADMIN ONLY                                                   */
 /* ------------------------------------------------------------------ */
 
-const seedDemo = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('✅ Connected to MongoDB');
+const seedAdminOnly = async () => {
+  const adminConfig = getAdminConfig();
 
-    // Confirmation prompt unless --force
-    if (!FORCE) {
-      const { createInterface } = await import('readline');
-      const rl = createInterface({ input: process.stdin, output: process.stdout });
-      const answer = await new Promise((resolve) =>
-        rl.question('⚠️  This will DROP all existing data. Continue? (y/N): ', resolve)
-      );
-      rl.close();
-      if (answer.toLowerCase() !== 'y') {
-        console.log('❌ Seed cancelled.');
-        await mongoose.disconnect();
-        return;
-      }
-    }
+  if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+    console.error('ADMIN_EMAIL and ADMIN_PASSWORD must be set in environment variables');
+    process.exit(1);
+  }
 
-    // Drop existing data
-    console.log('🗑️  Dropping existing data...');
-    await Promise.all([
-      User.deleteMany({}),
-      Job.deleteMany({}),
-      Application.deleteMany({}),
-      SavedJob.deleteMany({}),
-      Notification.deleteMany({}),
-    ]);
+  console.log(`📧 Admin email: ${adminConfig.email}`);
 
-    // ── 1. Create admin user ──
-    console.log('👤 Creating admin user...');
-    const admin = await User.create({
-      firstName: 'Admin',
-      lastName: 'User',
-      email: 'admin@jobboard.com',
-      password: 'Admin123!',
-      role: 'admin',
-    });
+  const existingAdmin = await User.findOne({ role: 'admin' });
 
-    // ── 2. Create company users ──
-    console.log('🏢 Creating company users...');
-    const companies = [];
-    for (const data of companyUsers) {
-      const company = await User.create(data);
-      companies.push(company);
-    }
-    const companyMap = {};
-    companies.forEach((c) => {
-      companyMap[c.email] = c._id;
-    });
-
-    // ── 3. Create candidate users ──
-    console.log('🧑‍💻 Creating candidate users...');
-    const candidates = [];
-    for (const data of candidateUsers) {
-      const candidate = await User.create(data);
-      candidates.push(candidate);
-    }
-
-    // ── 4. Create jobs ──
-    console.log('💼 Creating jobs...');
-    const jobDataList = buildJobs(companyMap);
-    const jobs = [];
-    for (const data of jobDataList) {
-      const job = await Job.create(data);
-      jobs.push(job);
-    }
-
-    // ── 5. Create applications (40 total) ──
-    console.log('📄 Creating applications...');
-    const applications = [];
-    const applicationPairs = new Set();
-
-    for (const candidate of candidates) {
-      const applyCount = randomInt(3, 6);
-      const shuffledJobs = shuffleArray(jobs);
-      let applied = 0;
-
-      for (const job of shuffledJobs) {
-        if (applied >= applyCount) break;
-        if (applications.length >= 40) break;
-
-        const pairKey = `${candidate._id}-${job._id}`;
-        if (applicationPairs.has(pairKey)) continue;
-        applicationPairs.add(pairKey);
-
-        const status = weightedStatus();
-        const statusHistory = [{ status: 'pending', changedAt: new Date(Date.now() - randomInt(1, 14) * 86400000), changedBy: candidate._id }];
-
-        if (status !== 'pending') {
-          statusHistory.push({
-            status,
-            note: status === 'rejected' ? 'Position has been filled.' : undefined,
-            changedAt: new Date(),
-            changedBy: job.company,
-          });
-        }
-
-        const app = await Application.create({
-          job: job._id,
-          candidate: candidate._id,
-          company: job.company,
-          cvUrl: `https://res.cloudinary.com/demo/raw/upload/sample_cv_${candidate.firstName.toLowerCase()}.pdf`,
-          coverLetter: randomPick(coverLetters) || undefined,
-          status,
-          statusNote: status === 'rejected' ? 'Position has been filled.' : undefined,
-          statusHistory,
-        });
-
-        applications.push(app);
-        applied++;
-      }
-    }
-
-    // ── 6. Update applicationCount on jobs ──
-    console.log('🔢 Updating application counts...');
-    const countMap = {};
-    applications.forEach((app) => {
-      const jobId = app.job.toString();
-      countMap[jobId] = (countMap[jobId] || 0) + 1;
-    });
-    for (const [jobId, count] of Object.entries(countMap)) {
-      await Job.findByIdAndUpdate(jobId, { applicationCount: count });
-    }
-
-    // ── 7. Create saved jobs (15) ──
-    console.log('🔖 Creating saved jobs...');
-    const savedJobs = [];
-    const savedPairs = new Set();
-
-    while (savedJobs.length < 15) {
-      const candidate = randomPick(candidates);
-      const job = randomPick(jobs);
-      const pairKey = `${candidate._id}-${job._id}`;
-      if (savedPairs.has(pairKey)) continue;
-      savedPairs.add(pairKey);
-
-      const saved = await SavedJob.create({ candidate: candidate._id, job: job._id });
-      savedJobs.push(saved);
-    }
-
-    // ── 8. Create notifications (20) ──
-    console.log('🔔 Creating notifications...');
-    const notifications = [];
-
-    for (const app of applications.slice(0, 12)) {
-      const job = jobs.find((j) => j._id.toString() === app.job.toString());
-      if (!job) continue;
-
-      // new_application → company gets notified
-      notifications.push({
-        recipient: app.company,
-        sender: app.candidate,
-        type: 'new_application',
-        title: 'New Application Received',
-        message: `A candidate applied for "${job.title}".`,
-        link: `/company/jobs/${job._id}/applications`,
-        relatedJob: job._id,
-        relatedApplication: app._id,
-        isRead: Math.random() > 0.5,
-      });
-    }
-
-    const nonPendingApps = applications.filter((a) => a.status !== 'pending');
-    for (const app of nonPendingApps.slice(0, 8)) {
-      const job = jobs.find((j) => j._id.toString() === app.job.toString());
-      if (!job) continue;
-
-      // status_update → candidate gets notified
-      notifications.push({
-        recipient: app.candidate,
-        sender: app.company,
-        type: 'status_update',
-        title: 'Application Status Updated',
-        message: `Your application for "${job.title}" has been ${app.status}.`,
-        link: `/candidate/applications`,
-        relatedJob: job._id,
-        relatedApplication: app._id,
-        isRead: Math.random() > 0.6,
-      });
-    }
-
-    await Notification.insertMany(notifications.slice(0, 20));
-
-    // ── Summary ──
-    const totalUsers = 1 + companies.length + candidates.length;
-    console.log('\n✅ Demo seed completed successfully!');
-    console.log('─'.repeat(50));
-    console.log(`   👤 Users:          ${totalUsers} (1 admin, ${companies.length} companies, ${candidates.length} candidates)`);
-    console.log(`   💼 Jobs:           ${jobs.length}`);
-    console.log(`   📄 Applications:   ${applications.length}`);
-    console.log(`   🔖 Saved Jobs:     ${savedJobs.length}`);
-    console.log(`   🔔 Notifications:  ${Math.min(notifications.length, 20)}`);
-    console.log('─'.repeat(50));
-    console.log('\n📋 Test Accounts:');
-    console.log('   Admin:     admin@jobboard.com / Admin123!');
-    console.log('   Company:   technova@jobboard.com / Demo123!');
-    console.log('   Candidate: ayse@jobboard.com / Demo123!');
-  } catch (error) {
-    console.error('❌ Demo seed failed:', error.message);
-    console.error(error.stack);
-  } finally {
-    await mongoose.disconnect();
-    console.log('\n📦 Disconnected from MongoDB');
+  if (existingAdmin) {
+    console.log('Admin user already exists:', existingAdmin.email);
+  } else {
+    const admin = await User.create(adminConfig);
+    console.log('Admin user created:', admin.email);
   }
 };
 
-seedDemo();
+/* ------------------------------------------------------------------ */
+/*  SEED: FULL (admin + demo data)                                     */
+/* ------------------------------------------------------------------ */
+
+const seedFull = async () => {
+  // Drop existing data
+  console.log('Dropping existing data...');
+  await Promise.all([
+    User.deleteMany({}),
+    Job.deleteMany({}),
+    Application.deleteMany({}),
+    SavedJob.deleteMany({}),
+    Notification.deleteMany({}),
+  ]);
+
+  // ── 1. Create admin user ──
+  const adminConfig = getAdminConfig();
+  console.log(`Creating admin user (${adminConfig.email})...`);
+  await User.create(adminConfig);
+
+  // ── 2. Create company users ──
+  console.log('Creating company users...');
+  const companies = [];
+  for (const data of companyUsers) {
+    const company = await User.create(data);
+    companies.push(company);
+  }
+  const companyMap = {};
+  companies.forEach((c) => {
+    companyMap[c.email] = c._id;
+  });
+
+  // ── 3. Create candidate users ──
+  console.log('Creating candidate users...');
+  const candidates = [];
+  for (const data of candidateUsers) {
+    const candidate = await User.create(data);
+    candidates.push(candidate);
+  }
+
+  // ── 4. Create jobs ──
+  console.log('Creating jobs...');
+  const jobDataList = buildJobs(companyMap);
+  const jobs = [];
+  for (const data of jobDataList) {
+    const job = await Job.create(data);
+    jobs.push(job);
+  }
+
+  // ── 5. Create applications (40 total) ──
+  console.log('Creating applications...');
+  const applications = [];
+  const applicationPairs = new Set();
+
+  for (const candidate of candidates) {
+    const applyCount = randomInt(3, 6);
+    const shuffledJobs = shuffleArray(jobs);
+    let applied = 0;
+
+    for (const job of shuffledJobs) {
+      if (applied >= applyCount) break;
+      if (applications.length >= 40) break;
+
+      const pairKey = `${candidate._id}-${job._id}`;
+      if (applicationPairs.has(pairKey)) continue;
+      applicationPairs.add(pairKey);
+
+      const status = weightedStatus();
+      const statusHistory = [{ status: 'pending', changedAt: new Date(Date.now() - randomInt(1, 14) * 86400000), changedBy: candidate._id }];
+
+      if (status !== 'pending') {
+        statusHistory.push({
+          status,
+          note: status === 'rejected' ? 'Position has been filled.' : undefined,
+          changedAt: new Date(),
+          changedBy: job.company,
+        });
+      }
+
+      const app = await Application.create({
+        job: job._id,
+        candidate: candidate._id,
+        company: job.company,
+        cvUrl: `https://res.cloudinary.com/demo/raw/upload/sample_cv_${candidate.firstName.toLowerCase()}.pdf`,
+        coverLetter: randomPick(coverLetters) || undefined,
+        status,
+        statusNote: status === 'rejected' ? 'Position has been filled.' : undefined,
+        statusHistory,
+      });
+
+      applications.push(app);
+      applied++;
+    }
+  }
+
+  // ── 6. Update applicationCount on jobs ──
+  console.log('Updating application counts...');
+  const countMap = {};
+  applications.forEach((app) => {
+    const jobId = app.job.toString();
+    countMap[jobId] = (countMap[jobId] || 0) + 1;
+  });
+  for (const [jobId, count] of Object.entries(countMap)) {
+    await Job.findByIdAndUpdate(jobId, { applicationCount: count });
+  }
+
+  // ── 7. Create saved jobs (15) ──
+  console.log('Creating saved jobs...');
+  const savedJobs = [];
+  const savedPairs = new Set();
+
+  while (savedJobs.length < 15) {
+    const candidate = randomPick(candidates);
+    const job = randomPick(jobs);
+    const pairKey = `${candidate._id}-${job._id}`;
+    if (savedPairs.has(pairKey)) continue;
+    savedPairs.add(pairKey);
+
+    const saved = await SavedJob.create({ candidate: candidate._id, job: job._id });
+    savedJobs.push(saved);
+  }
+
+  // ── 8. Create notifications (20) ──
+  console.log('Creating notifications...');
+  const notifications = [];
+
+  for (const app of applications.slice(0, 12)) {
+    const job = jobs.find((j) => j._id.toString() === app.job.toString());
+    if (!job) continue;
+
+    notifications.push({
+      recipient: app.company,
+      sender: app.candidate,
+      type: 'new_application',
+      title: 'New Application Received',
+      message: `A candidate applied for "${job.title}".`,
+      link: `/company/jobs/${job._id}/applications`,
+      relatedJob: job._id,
+      relatedApplication: app._id,
+      isRead: Math.random() > 0.5,
+    });
+  }
+
+  const nonPendingApps = applications.filter((a) => a.status !== 'pending');
+  for (const app of nonPendingApps.slice(0, 8)) {
+    const job = jobs.find((j) => j._id.toString() === app.job.toString());
+    if (!job) continue;
+
+    notifications.push({
+      recipient: app.candidate,
+      sender: app.company,
+      type: 'status_update',
+      title: 'Application Status Updated',
+      message: `Your application for "${job.title}" has been ${app.status}.`,
+      link: `/candidate/applications`,
+      relatedJob: job._id,
+      relatedApplication: app._id,
+      isRead: Math.random() > 0.6,
+    });
+  }
+
+  await Notification.insertMany(notifications.slice(0, 20));
+
+  // ── Summary ──
+  const totalUsers = 1 + companies.length + candidates.length;
+  console.log('\nSeed completed successfully!');
+  console.log('─'.repeat(50));
+  console.log(`   Users:          ${totalUsers} (1 admin, ${companies.length} companies, ${candidates.length} candidates)`);
+  console.log(`   Jobs:           ${jobs.length}`);
+  console.log(`   Applications:   ${applications.length}`);
+  console.log(`   Saved Jobs:     ${savedJobs.length}`);
+  console.log(`   Notifications:  ${Math.min(notifications.length, 20)}`);
+  console.log('─'.repeat(50));
+  console.log('\nTest Accounts:');
+  console.log(`   Admin:     ${adminConfig.email} / ***`);
+  console.log('   Company:   technova@jobboard.com / Demo123!');
+  console.log('   Candidate: ayse@jobboard.com / Demo123!');
+};
+
+/* ------------------------------------------------------------------ */
+/*  MAIN                                                               */
+/* ------------------------------------------------------------------ */
+
+const main = async () => {
+  const { MONGO_URI } = process.env;
+  const mode = ADMIN_ONLY ? 'admin-only' : 'full';
+
+  console.log(`\n--- Seed Started [${mode}] ---\n`);
+
+  if (!MONGO_URI) {
+    console.error('MONGO_URI is not set');
+    process.exit(1);
+  }
+
+  console.log(`MONGO_URI: ${MONGO_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')}`);
+
+  try {
+    await mongoose.connect(MONGO_URI, {
+      serverSelectionTimeoutMS: 15000,
+      connectTimeoutMS: 15000,
+    });
+    console.log('Connected to MongoDB\n');
+
+    if (ADMIN_ONLY) {
+      await seedAdminOnly();
+    } else {
+      await seedFull();
+    }
+  } catch (error) {
+    console.error('Seed failed:', error.message);
+    console.error(error.stack);
+    process.exit(1);
+  } finally {
+    await mongoose.disconnect();
+    console.log('\nDisconnected from MongoDB');
+    console.log('--- Seed Completed ---\n');
+  }
+};
+
+await main();

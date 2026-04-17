@@ -7,9 +7,9 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "build": "npm install && node seed/adminSeed.js && node seed/demoSeed.js --force",
-    "seed:admin": "node seed/adminSeed.js",
-    "seed:demo": "node seed/demoSeed.js"
+    "build": "npm install && node seed/seed.js",
+    "seed": "node seed/seed.js",
+    "seed:admin": "node seed/seed.js --admin-only"
   },
   "keywords": [],
   "author": {
