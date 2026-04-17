@@ -15,13 +15,21 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    rememberMe: false,
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [shakeForm, setShakeForm] = useState(false);
 
   const handleChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
   };
 
   const triggerShake = () => {
@@ -127,6 +135,22 @@ const LoginPage = () => {
               </button>
             </div>
           </div>
+
+          {/* Remember me */}
+          <label
+            htmlFor="rememberMe"
+            className="flex cursor-pointer select-none items-center gap-2 text-sm text-slate-600 dark:text-slate-300"
+          >
+            <input
+              id="rememberMe"
+              name="rememberMe"
+              type="checkbox"
+              checked={formData.rememberMe}
+              onChange={handleChange}
+              className="h-4 w-4 cursor-pointer rounded border-slate-300 text-primary-600 focus:ring-2 focus:ring-primary-500/40 dark:border-slate-600 dark:bg-slate-700"
+            />
+            <span>Remember me for 30 days</span>
+          </label>
 
           {/* Submit */}
           <button

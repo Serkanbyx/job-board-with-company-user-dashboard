@@ -3,21 +3,28 @@ import env from '../config/env.js';
 import RefreshToken from '../models/RefreshToken.js';
 
 /**
- * Signs a short-lived JWT access token (15 minutes).
+ * Signs a short-lived JWT access token.
+ * Lifetime is configurable via ACCESS_TOKEN_TTL env (default 1h).
  * Payload includes user id and token version for invalidation support.
  */
 export const generateAccessToken = (userId, tokenVersion) => {
   return jwt.sign({ id: userId, v: tokenVersion }, env.JWT_SECRET, {
-    expiresIn: '15m',
+    expiresIn: env.ACCESS_TOKEN_TTL,
   });
 };
 
 /**
- * Creates a long-lived refresh token (7 days) via the RefreshToken model.
+ * Creates a long-lived refresh token via the RefreshToken model.
+ * Lifetime is 7 days by default, or 30 days when `rememberMe` is true.
  * Returns the plaintext token to send to the client.
  */
-export const generateRefreshToken = async (userId, ip, userAgent) => {
-  return RefreshToken.createToken(userId, ip, userAgent);
+export const generateRefreshToken = async (
+  userId,
+  ip,
+  userAgent,
+  rememberMe = false
+) => {
+  return RefreshToken.createToken(userId, ip, userAgent, rememberMe);
 };
 
 /**

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL || '/api',
@@ -58,7 +59,7 @@ axiosInstance.interceptors.response.use(
       if (!refreshToken) {
         isRefreshing = false;
         processQueue(error, null);
-        clearTokensAndRedirect();
+        clearTokensAndRedirect('Your session has expired. Please log in again.');
         return Promise.reject(error);
       }
 
@@ -80,7 +81,14 @@ axiosInstance.interceptors.response.use(
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        clearTokensAndRedirect();
+        const status = refreshError.response?.status;
+        const serverMessage = refreshError.response?.data?.message;
+        const reason =
+          serverMessage ||
+          (status === 429
+            ? 'Too many refresh attempts. Please log in again.'
+            : 'Your session has expired. Please log in again.');
+        clearTokensAndRedirect(reason);
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -92,7 +100,10 @@ axiosInstance.interceptors.response.use(
       error.response?.status === 401 &&
       originalRequest.url?.includes('/auth/refresh-token')
     ) {
-      clearTokensAndRedirect();
+      clearTokensAndRedirect(
+        error.response?.data?.message ||
+          'Your session has expired. Please log in again.',
+      );
       return Promise.reject(error);
     }
 
@@ -103,10 +114,23 @@ axiosInstance.interceptors.response.use(
   },
 );
 
-const clearTokensAndRedirect = () => {
+// Guard so we don't show multiple toasts / trigger multiple redirects when
+// several queued requests fail at once after a refresh failure.
+let isRedirecting = false;
+
+const clearTokensAndRedirect = (message) => {
   localStorage.removeItem('jb_access_token');
   localStorage.removeItem('jb_refresh_token');
-  window.location.href = '/login';
+
+  if (isRedirecting) return;
+  isRedirecting = true;
+
+  if (message) toast.error(message);
+
+  // Avoid an immediate reload loop if we're already on /login
+  if (window.location.pathname !== '/login') {
+    window.location.assign('/login');
+  }
 };
 
 export default axiosInstance;

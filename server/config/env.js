@@ -7,6 +7,7 @@ const env = {
   MONGO_URI: process.env.MONGO_URI,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
+  ACCESS_TOKEN_TTL: process.env.ACCESS_TOKEN_TTL || '1h',
   NODE_ENV: process.env.NODE_ENV || 'development',
   CORS_ORIGIN: process.env.CORS_ORIGIN || 'http://localhost:5173',
 

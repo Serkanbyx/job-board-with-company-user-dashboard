@@ -105,7 +105,7 @@ export const register = async (req, res, next) => {
  */
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe = false } = req.body;
 
     if (!email || !password) {
       return sendError(res, 400, 'Please provide email and password.');
@@ -155,7 +155,8 @@ export const login = async (req, res, next) => {
     const refreshToken = await generateRefreshToken(
       user._id,
       req.ip,
-      req.headers['user-agent']
+      req.headers['user-agent'],
+      Boolean(rememberMe)
     );
 
     sendSuccess(
@@ -202,6 +203,9 @@ export const refreshTokenHandler = async (req, res, next) => {
       );
     }
 
+    // Preserve the original "remember me" lifetime across rotations
+    const rememberMe = Boolean(tokenDoc.rememberMe);
+
     // Token rotation — revoke the old token
     tokenDoc.isRevoked = true;
     await tokenDoc.save();
@@ -210,7 +214,8 @@ export const refreshTokenHandler = async (req, res, next) => {
     const newRefreshToken = await generateRefreshToken(
       user._id,
       req.ip,
-      req.headers['user-agent']
+      req.headers['user-agent'],
+      rememberMe
     );
 
     sendSuccess(

@@ -25,9 +25,23 @@ const refreshTokenSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // Tracks whether the session was opened with "Remember me" so that the
+    // same lifetime can be applied when the token is rotated.
+    rememberMe: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
+
+const DEFAULT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+const REMEMBER_ME_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+export const REFRESH_TOKEN_TTL = {
+  default: DEFAULT_TTL_MS,
+  rememberMe: REMEMBER_ME_TTL_MS,
+};
 
 // Indexes
 refreshTokenSchema.index({ token: 1 }, { unique: true });
@@ -39,19 +53,27 @@ refreshTokenSchema.index({ user: 1, isRevoked: 1 });
  * Generates a random token, hashes it with SHA-256,
  * stores the hash, and returns the plaintext token to the client.
  */
-refreshTokenSchema.statics.createToken = async function (userId, ip, userAgent) {
+refreshTokenSchema.statics.createToken = async function (
+  userId,
+  ip,
+  userAgent,
+  rememberMe = false
+) {
   const plainToken = crypto.randomBytes(64).toString('hex');
   const hashedToken = crypto
     .createHash('sha256')
     .update(plainToken)
     .digest('hex');
 
+  const ttl = rememberMe ? REMEMBER_ME_TTL_MS : DEFAULT_TTL_MS;
+
   await this.create({
     token: hashedToken,
     user: userId,
     ip,
     userAgent: userAgent?.substring(0, 256),
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+    expiresAt: new Date(Date.now() + ttl),
+    rememberMe,
   });
 
   return plainToken;

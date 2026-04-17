@@ -13,6 +13,7 @@ import {
 import { protect } from '../middlewares/auth.js';
 import {
   authLimiter,
+  refreshLimiter,
   sensitiveOpLimiter,
   passwordLimiter,
 } from '../middlewares/rateLimiter.js';
@@ -30,7 +31,7 @@ const router = Router();
 // Public routes
 router.post('/register', authLimiter, registerValidator, validate, register);
 router.post('/login', authLimiter, loginValidator, validate, login);
-router.post('/refresh-token', authLimiter, refreshTokenHandler);
+router.post('/refresh-token', refreshLimiter, refreshTokenHandler);
 
 // Protected routes
 router.post('/logout', protect, logout);

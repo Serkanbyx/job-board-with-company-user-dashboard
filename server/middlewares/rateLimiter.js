@@ -31,6 +31,19 @@ export const authLimiter = createLimiter({
   skipFailedRequests: false,
 });
 
+// Dedicated, more permissive limiter for refresh-token rotation.
+// Refresh requests are triggered automatically by the client whenever the
+// short-lived access token expires, so they must not share the brute-force
+// budget reserved for login/register attempts.
+export const refreshLimiter = createLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 60,
+  message: 'Too many token refresh attempts, please login again.',
+  keyGenerator: (req) => ipKeyGenerator(req.ip),
+  skipSuccessfulRequests: true,
+  skipFailedRequests: false,
+});
+
 export const passwordLimiter = createLimiter({
   windowMs: 60 * 60 * 1000,
   max: 3,
