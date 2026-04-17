@@ -31,13 +31,13 @@ const APPLICATION_STATUS_COLORS = {
 };
 
 const PROFILE_CHECKLIST = [
-  { key: 'basicInfo', label: 'Basic info', check: (u) => u?.firstName && u?.lastName },
-  { key: 'title', label: 'Add professional title', check: (u) => !!u?.title },
-  { key: 'skills', label: 'Add skills', check: (u) => u?.skills?.length > 0 },
-  { key: 'bio', label: 'Write a bio', check: (u) => !!u?.bio },
-  { key: 'cvUrl', label: 'Upload CV', check: (u) => !!u?.cvUrl },
-  { key: 'experience', label: 'Add experience', check: (u) => u?.experience?.length > 0 },
-  { key: 'location', label: 'Set location', check: (u) => !!u?.location },
+  { key: 'basicInfo', label: 'Basic info', anchor: 'firstName', check: (u) => u?.firstName && u?.lastName },
+  { key: 'title', label: 'Add professional title', anchor: 'title', check: (u) => !!u?.title },
+  { key: 'skills', label: 'Add skills', anchor: 'title', check: (u) => u?.skills?.length > 0 },
+  { key: 'bio', label: 'Write a bio', anchor: 'bio', check: (u) => !!u?.bio },
+  { key: 'cvUrl', label: 'Upload CV', anchor: 'title', check: (u) => !!u?.cvUrl },
+  { key: 'experience', label: 'Set experience level', anchor: 'experience', check: (u) => !!u?.experience },
+  { key: 'location', label: 'Set location', anchor: 'location', check: (u) => !!u?.location },
 ];
 
 /* ─────────────────── Skeleton Loader ─────────────────── */
@@ -199,20 +199,21 @@ const ProfileCompletionCard = ({ user, completeness }) => {
           </h3>
           <ul className="space-y-1.5">
             {items.map((item) => (
-              <li
-                key={item.key}
-                className={`flex items-center gap-2 text-sm ${
-                  item.completed
-                    ? 'text-slate-400 line-through dark:text-slate-500'
-                    : 'text-slate-700 dark:text-slate-300'
-                }`}
-              >
+              <li key={item.key}>
                 {item.completed ? (
-                  <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+                  <span className="flex items-center gap-2 text-sm text-slate-400 line-through dark:text-slate-500">
+                    <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
+                    {item.label}
+                  </span>
                 ) : (
-                  <Circle className="h-4 w-4 shrink-0 text-slate-300 dark:text-slate-600" />
+                  <Link
+                    to={`/settings/profile#${item.anchor}`}
+                    className="group flex items-center gap-2 text-sm text-slate-700 transition-colors hover:text-primary-600 dark:text-slate-300 dark:hover:text-primary-400"
+                  >
+                    <Circle className="h-4 w-4 shrink-0 text-slate-300 group-hover:text-primary-400 dark:text-slate-600" />
+                    <span className="group-hover:underline">{item.label}</span>
+                  </Link>
                 )}
-                {item.label}
               </li>
             ))}
           </ul>
@@ -512,7 +513,7 @@ const CandidateDashboard = () => {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
           Welcome back, {user?.firstName}!
         </h1>
-        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           {formattedDate} — Here's an overview of your job search progress.
         </p>
       </div>

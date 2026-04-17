@@ -27,10 +27,31 @@ const inputClass =
 
 const labelClass = 'mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300';
 
+const URL_FIELDS = {
+  portfolioUrl: 'Portfolio URL',
+  linkedinUrl: 'LinkedIn URL',
+  githubUrl: 'GitHub URL',
+  companyWebsite: 'Company Website',
+  socialLinkedin: 'LinkedIn',
+  socialTwitter: 'Twitter',
+  socialFacebook: 'Facebook',
+};
+
+const isValidHttpUrl = (value) => {
+  if (!value) return true; // empty is allowed (fields are optional)
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 const ProfileSettingsPage = () => {
   const { user, isCandidate, isCompany, updateUser } = useAuth();
   const [formData, setFormData] = useState({});
   const [initialData, setInitialData] = useState({});
+  const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [logoUploading, setLogoUploading] = useState(false);
@@ -87,6 +108,35 @@ const ProfileSettingsPage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
+  const validateForm = () => {
+    const next = {};
+
+    for (const field of Object.keys(URL_FIELDS)) {
+      if (!isValidHttpUrl(formData[field])) {
+        next[field] = `Enter a valid URL starting with http:// or https://`;
+      }
+    }
+
+    const min = formData.desiredSalaryMin;
+    const max = formData.desiredSalaryMax;
+    if (min !== '' && Number(min) < 0) next.desiredSalaryMin = 'Salary cannot be negative';
+    if (max !== '' && Number(max) < 0) next.desiredSalaryMax = 'Salary cannot be negative';
+    if (min !== '' && max !== '' && Number(min) > Number(max)) {
+      next.desiredSalaryMax = 'Maximum must be greater than minimum';
+    }
+
+    if (formData.companyFounded) {
+      const year = Number(formData.companyFounded);
+      const currentYear = new Date().getFullYear();
+      if (year < 1800 || year > currentYear) {
+        next.companyFounded = `Year must be between 1800 and ${currentYear}`;
+      }
+    }
+
+    return next;
   };
 
   const handleAvatarUpload = async (e) => {
@@ -149,6 +199,18 @@ const ProfileSettingsPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const validationErrors = validateForm();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      const firstField = Object.keys(validationErrors)[0];
+      const el = document.getElementById(firstField) || document.querySelector(`[name="${firstField}"]`);
+      if (el) setTimeout(() => el.focus(), 50);
+      toast.error('Please fix the highlighted errors.');
+      return;
+    }
+
+    setErrors({});
     setSaving(true);
 
     try {
@@ -210,6 +272,18 @@ const ProfileSettingsPage = () => {
       setSaving(false);
     }
   };
+
+  const FieldError = ({ name }) =>
+    errors[name] ? (
+      <p className="mt-1 text-xs text-danger-500" role="alert">
+        {errors[name]}
+      </p>
+    ) : null;
+
+  const errorBorder = (name) =>
+    errors[name]
+      ? 'border-danger-400 focus:border-danger-500 focus:ring-danger-500/20 dark:border-danger-500'
+      : '';
 
   const getCvFilename = (url) => {
     if (!url) return null;
@@ -473,9 +547,10 @@ const ProfileSettingsPage = () => {
                   type="url"
                   value={formData.portfolioUrl || ''}
                   onChange={handleChange}
-                  className={inputClass}
+                  className={`${inputClass} ${errorBorder('portfolioUrl')}`}
                   placeholder="https://portfolio.com"
                 />
+                <FieldError name="portfolioUrl" />
               </div>
               <div>
                 <label htmlFor="linkedinUrl" className={labelClass}>LinkedIn URL</label>
@@ -485,9 +560,10 @@ const ProfileSettingsPage = () => {
                   type="url"
                   value={formData.linkedinUrl || ''}
                   onChange={handleChange}
-                  className={inputClass}
+                  className={`${inputClass} ${errorBorder('linkedinUrl')}`}
                   placeholder="https://linkedin.com/in/..."
                 />
+                <FieldError name="linkedinUrl" />
               </div>
               <div>
                 <label htmlFor="githubUrl" className={labelClass}>GitHub URL</label>
@@ -497,9 +573,10 @@ const ProfileSettingsPage = () => {
                   type="url"
                   value={formData.githubUrl || ''}
                   onChange={handleChange}
-                  className={inputClass}
+                  className={`${inputClass} ${errorBorder('githubUrl')}`}
                   placeholder="https://github.com/..."
                 />
+                <FieldError name="githubUrl" />
               </div>
             </div>
 
@@ -507,24 +584,30 @@ const ProfileSettingsPage = () => {
             <div>
               <label className={labelClass}>Desired Salary</label>
               <div className="grid gap-4 sm:grid-cols-3">
-                <input
-                  name="desiredSalaryMin"
-                  type="number"
-                  min="0"
-                  value={formData.desiredSalaryMin || ''}
-                  onChange={handleChange}
-                  className={inputClass}
-                  placeholder="Min"
-                />
-                <input
-                  name="desiredSalaryMax"
-                  type="number"
-                  min="0"
-                  value={formData.desiredSalaryMax || ''}
-                  onChange={handleChange}
-                  className={inputClass}
-                  placeholder="Max"
-                />
+                <div>
+                  <input
+                    name="desiredSalaryMin"
+                    type="number"
+                    min="0"
+                    value={formData.desiredSalaryMin || ''}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errorBorder('desiredSalaryMin')}`}
+                    placeholder="Min"
+                  />
+                  <FieldError name="desiredSalaryMin" />
+                </div>
+                <div>
+                  <input
+                    name="desiredSalaryMax"
+                    type="number"
+                    min="0"
+                    value={formData.desiredSalaryMax || ''}
+                    onChange={handleChange}
+                    className={`${inputClass} ${errorBorder('desiredSalaryMax')}`}
+                    placeholder="Max"
+                  />
+                  <FieldError name="desiredSalaryMax" />
+                </div>
                 <select
                   name="desiredSalaryCurrency"
                   value={formData.desiredSalaryCurrency || 'USD'}
@@ -642,9 +725,10 @@ const ProfileSettingsPage = () => {
                   type="url"
                   value={formData.companyWebsite || ''}
                   onChange={handleChange}
-                  className={inputClass}
+                  className={`${inputClass} ${errorBorder('companyWebsite')}`}
                   placeholder="https://yourcompany.com"
                 />
+                <FieldError name="companyWebsite" />
               </div>
               <div>
                 <label htmlFor="companyLocation" className={labelClass}>Company Location</label>
@@ -670,9 +754,10 @@ const ProfileSettingsPage = () => {
                 max={new Date().getFullYear()}
                 value={formData.companyFounded || ''}
                 onChange={handleChange}
-                className={`${inputClass} max-w-[180px]`}
+                className={`${inputClass} max-w-[180px] ${errorBorder('companyFounded')}`}
                 placeholder="e.g. 2015"
               />
+              <FieldError name="companyFounded" />
             </div>
 
             <div>
@@ -706,9 +791,10 @@ const ProfileSettingsPage = () => {
                     type="url"
                     value={formData.socialLinkedin || ''}
                     onChange={handleChange}
-                    className={inputClass}
+                    className={`${inputClass} ${errorBorder('socialLinkedin')}`}
                     placeholder="https://linkedin.com/company/..."
                   />
+                  <FieldError name="socialLinkedin" />
                 </div>
                 <div>
                   <label htmlFor="socialTwitter" className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
@@ -720,9 +806,10 @@ const ProfileSettingsPage = () => {
                     type="url"
                     value={formData.socialTwitter || ''}
                     onChange={handleChange}
-                    className={inputClass}
+                    className={`${inputClass} ${errorBorder('socialTwitter')}`}
                     placeholder="https://twitter.com/..."
                   />
+                  <FieldError name="socialTwitter" />
                 </div>
                 <div>
                   <label htmlFor="socialFacebook" className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
@@ -734,9 +821,10 @@ const ProfileSettingsPage = () => {
                     type="url"
                     value={formData.socialFacebook || ''}
                     onChange={handleChange}
-                    className={inputClass}
+                    className={`${inputClass} ${errorBorder('socialFacebook')}`}
                     placeholder="https://facebook.com/..."
                   />
+                  <FieldError name="socialFacebook" />
                 </div>
               </div>
             </div>

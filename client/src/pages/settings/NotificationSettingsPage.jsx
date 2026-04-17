@@ -60,14 +60,15 @@ const NotificationSettingsPage = () => {
       setSavingKey(key);
 
       try {
-        const { user: updatedUser } = await authService.updateProfile({
+        const res = await authService.updateProfile({
           notificationPrefs: updatedPrefs,
         });
-        updateUser(updatedUser);
-        toast.success('Preferences updated');
-      } catch {
+        const updatedUser = res?.data?.user || res?.user;
+        if (updatedUser) updateUser(updatedUser);
+        toast.success('Preferences saved');
+      } catch (err) {
         setPrefs(prevPrefs);
-        toast.error('Failed to update preferences.');
+        toast.error(err?.response?.data?.message || 'Failed to update preferences.');
       } finally {
         setSavingKey(null);
       }
@@ -78,9 +79,14 @@ const NotificationSettingsPage = () => {
   return (
     <div className="space-y-8">
       <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-800">
-        <h2 className="mb-6 text-lg font-semibold text-slate-900 dark:text-white">
-          Email Notifications
-        </h2>
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+            Email Notifications
+          </h2>
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            Changes are saved automatically
+          </span>
+        </div>
 
         <div className="divide-y divide-slate-100 dark:divide-slate-700">
           {visibleSettings.map(({ key, label, description }) => (

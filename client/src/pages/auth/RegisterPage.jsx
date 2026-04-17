@@ -195,7 +195,9 @@ const RegisterPage = () => {
       else if (!/[0-9]/.test(formData.password))
         newErrors.password = 'Include at least 1 number';
 
-      if (formData.password !== formData.confirmPassword)
+      if (!formData.confirmPassword)
+        newErrors.confirmPassword = 'Please confirm your password';
+      else if (formData.password !== formData.confirmPassword)
         newErrors.confirmPassword = 'Passwords do not match';
     }
 

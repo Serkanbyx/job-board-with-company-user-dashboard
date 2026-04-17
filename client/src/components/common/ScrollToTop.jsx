@@ -5,12 +5,27 @@ import { ArrowUp } from 'lucide-react';
 const SCROLL_THRESHOLD = 600;
 
 const ScrollToTop = () => {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   const [showButton, setShowButton] = useState(false);
 
   useEffect(() => {
+    // If the URL has a hash, scroll to that element after the route mounts
+    if (hash) {
+      const id = hash.replace('#', '');
+      // Defer to next tick so target element is rendered
+      const timer = setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          if (typeof el.focus === 'function') el.focus({ preventScroll: true });
+          return;
+        }
+        window.scrollTo(0, 0);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
     window.scrollTo(0, 0);
-  }, [pathname]);
+  }, [pathname, hash]);
 
   useEffect(() => {
     const handleScroll = () => {

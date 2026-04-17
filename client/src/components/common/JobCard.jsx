@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Briefcase, DollarSign, Building2, Calendar } from 'lucide-react';
 import { formatSalary, getJobTypeColor, truncateText } from '../../utils/helpers';
-import { formatRelativeDate, isExpired } from '../../utils/formatDate';
+import { formatDate, formatRelativeDate, isExpired } from '../../utils/formatDate';
 import { EXPERIENCE_LEVELS, JOB_TYPES } from '../../utils/constants';
 
 const getExperienceLabel = (value) =>
@@ -110,7 +110,7 @@ const JobCard = ({ job }) => {
             }`}
           >
             <Calendar className="h-3.5 w-3.5" />
-            {expired ? 'Expired' : `Due ${formatRelativeDate(deadline)}`}
+            {expired ? 'Expired' : `Due ${formatDate(deadline)}`}
           </span>
         )}
       </div>

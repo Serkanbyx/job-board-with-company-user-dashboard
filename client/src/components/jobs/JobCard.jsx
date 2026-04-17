@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Clock, Briefcase, DollarSign, Building2, Calendar, Heart } from 'lucide-react';
 import { formatSalary, getJobTypeColor, truncateText } from '../../utils/helpers';
-import { formatRelativeDate, isExpired, daysUntil } from '../../utils/formatDate';
+import { formatDate, formatRelativeDate, isExpired, daysUntil } from '../../utils/formatDate';
 import { EXPERIENCE_LEVELS, JOB_TYPES } from '../../utils/constants';
 
 const getExperienceLabel = (value) =>
@@ -171,7 +171,7 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
                 }`}
               >
                 <Calendar className="h-3.5 w-3.5" />
-                {expired ? 'Expired' : `Due ${formatRelativeDate(deadline)}`}
+                {expired ? 'Expired' : `Due ${formatDate(deadline)}`}
               </span>
             )}
           </div>
@@ -280,7 +280,7 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
                 ? daysLeft === 0
                   ? 'Expires today'
                   : `${daysLeft}d left`
-                : `Due ${formatRelativeDate(deadline)}`}
+                : `Due ${formatDate(deadline)}`}
           </span>
         )}
       </div>

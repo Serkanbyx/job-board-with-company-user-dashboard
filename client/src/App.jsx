@@ -20,12 +20,16 @@ import ScrollToTop from './components/common/ScrollToTop';
 /* Auth Pages */
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 
 /* Public Pages */
 import HomePage from './pages/public/HomePage';
 import JobListPage from './pages/public/JobListPage';
 import JobDetailPage from './pages/public/JobDetailPage';
 import CompanyProfilePage from './pages/public/CompanyProfilePage';
+import AboutPage from './pages/public/AboutPage';
+import ContactPage from './pages/public/ContactPage';
+import PrivacyPolicyPage from './pages/public/PrivacyPolicyPage';
 
 /* Company Pages */
 import CompanyDashboard from './pages/company/CompanyDashboard';
@@ -89,6 +93,9 @@ const App = () => {
           <Route path="/jobs" element={<JobListPage />} />
           <Route path="/jobs/:slug" element={<JobDetailPage />} />
           <Route path="/company/:id" element={<CompanyProfilePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Route>
 
         {/* Guest only routes */}
@@ -96,6 +103,7 @@ const App = () => {
           <Route element={<MainLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           </Route>
         </Route>
 
