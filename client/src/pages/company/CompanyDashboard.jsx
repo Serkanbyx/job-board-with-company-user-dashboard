@@ -369,7 +369,9 @@ const CompanyDashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const companyName = user?.company?.name || `${user?.firstName} ${user?.lastName}`;
+  const companyName =
+    user?.companyName?.trim() ||
+    `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim();
 
   const formattedDate = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -381,8 +383,9 @@ const CompanyDashboard = () => {
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
-        const data = await userService.getCompanyDashboardStats();
-        setStats(data);
+        const response = await userService.getCompanyDashboardStats();
+        // API envelope: { success, message, data: { totalJobs, ... } }
+        setStats(response?.data || response);
       } catch (error) {
         toast.error(error.message || 'Failed to load dashboard data');
       } finally {
@@ -400,9 +403,12 @@ const CompanyDashboard = () => {
     activeJobs = 0,
     totalApplications = 0,
     pendingApplications = 0,
-    statusDistribution = {},
+    // Server returns `statusBreakdown` and `applicationsByMonth` — keep aliases for back-compat
+    statusBreakdown = {},
+    statusDistribution = statusBreakdown,
     recentApplications = [],
-    monthlyApplications = [],
+    applicationsByMonth = [],
+    monthlyApplications = applicationsByMonth,
   } = stats || {};
 
   return (

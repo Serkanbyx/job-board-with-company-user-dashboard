@@ -109,21 +109,18 @@ const JobDetailPage = () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await jobService.getJobBySlug(slug);
-      setJob(data.job || data);
+      const response = await jobService.getJobBySlug(slug);
+      // API envelope: { success, message, data: { job } }
+      const jobData = response?.data?.job || response?.job || null;
+      setJob(jobData);
 
-      const jobData = data.job || data;
-
-      // Fetch similar jobs
-      if (jobData._id) {
+      if (jobData?._id) {
+        // Similar jobs route uses :slug, so pass the slug — not the id
         jobService
-          .getSimilarJobs(jobData._id)
-          .then((res) => setSimilarJobs(res.jobs || res || []))
+          .getSimilarJobs(jobData.slug || slug)
+          .then((res) => setSimilarJobs(res?.data?.jobs || res?.jobs || []))
           .catch(() => {});
-      }
 
-      // Check saved status for authenticated candidates
-      if (jobData._id) {
         checkCandidateStatus(jobData._id);
       }
     } catch (err) {
@@ -144,13 +141,18 @@ const JobDetailPage = () => {
         ]);
 
         if (savedRes.status === 'fulfilled') {
-          setIsSaved(savedRes.value.isSaved || false);
+          // API returns { data: { [jobId]: boolean } }
+          const statusMap = savedRes.value?.data || {};
+          setIsSaved(Boolean(statusMap[jobId]));
         }
 
         if (appsRes.status === 'fulfilled') {
-          const apps = appsRes.value.applications || appsRes.value || [];
+          // Paginated payload exposes data as an array at the top level
+          const apps = Array.isArray(appsRes.value?.data)
+            ? appsRes.value.data
+            : appsRes.value?.data?.applications || [];
           const myApp = apps.find(
-            (app) => (app.job?._id || app.job) === jobId
+            (app) => (app.job?._id || app.job) === jobId,
           );
           if (myApp) {
             setHasApplied(true);

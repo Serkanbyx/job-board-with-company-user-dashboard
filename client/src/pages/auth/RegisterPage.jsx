@@ -242,8 +242,9 @@ const RegisterPage = () => {
       }
 
       const data = await register(payload);
+      const role = data?.user?.role;
+      navigate(DASHBOARD_ROUTES[role] || '/', { replace: true });
       toast.success('Welcome to JobBoard!');
-      navigate(DASHBOARD_ROUTES[data.user.role] || '/', { replace: true });
     } catch (err) {
       const message = err.response?.data?.message || 'Registration failed. Please try again.';
       toast.error(message);

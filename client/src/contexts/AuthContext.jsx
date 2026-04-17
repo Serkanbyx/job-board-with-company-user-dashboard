@@ -85,7 +85,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('jb_access_token', accessToken);
       localStorage.setItem('jb_refresh_token', refreshToken);
       setUser(userData);
-      return response;
+      // Return the inner payload so callers can read `data.user` directly
+      return response.data;
     },
     [],
   );
@@ -97,7 +98,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('jb_access_token', accessToken);
       localStorage.setItem('jb_refresh_token', refreshToken);
       setUser(userData);
-      return response;
+      // Return the inner payload so callers can read `data.user` directly
+      return response.data;
     },
     [],
   );
