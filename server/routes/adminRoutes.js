@@ -8,6 +8,7 @@ import {
   deleteUser,
   getAllJobsAdmin,
   toggleJobFeatured,
+  toggleJobActive,
   deleteJobAdmin,
   getAllApplicationsAdmin,
   getPlatformAnalytics,
@@ -40,6 +41,7 @@ router.delete('/users/:id', deleteUser);
 // Job management
 router.get('/jobs', adminQueryValidator, validate, getAllJobsAdmin);
 router.patch('/jobs/:id/featured', toggleJobFeatured);
+router.patch('/jobs/:id/active', toggleJobActive);
 router.delete('/jobs/:id', deleteJobAdmin);
 
 // Application management

@@ -6,7 +6,8 @@ import {
   Trash2,
   Eye,
   ExternalLink,
-  MoreHorizontal,
+  Power,
+  PowerOff,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as adminService from '../../api/adminService';
@@ -18,6 +19,7 @@ import Pagination from '../../components/common/Pagination';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import EmptyState from '../../components/common/EmptyState';
 import SkeletonTable from '../../components/common/SkeletonTable';
+import ActionsMenu from '../../components/common/ActionsMenu';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -35,60 +37,66 @@ const SORT_OPTIONS = [
 
 /* ─────────────────── Actions Dropdown ─────────────────── */
 
-const ActionsDropdown = ({ job, onView, onToggleFeatured, onDelete }) => {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = () => setOpen(false);
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, [open]);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((prev) => !prev);
-        }}
-        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
-        aria-label="Actions"
-      >
-        <MoreHorizontal className="h-4 w-4" />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-          <Link
-            to={`/jobs/${job.slug}`}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
-          >
-            <Eye className="h-4 w-4" /> View Public Page
-          </Link>
-          <button
-            onClick={() => onToggleFeatured(job)}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
-          >
-            <Star className={`h-4 w-4 ${job.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
-            {job.isFeatured ? 'Remove Featured' : 'Make Featured'}
-          </button>
-          <hr className="my-1 border-slate-200 dark:border-slate-700" />
-          <button
-            onClick={() => onDelete(job)}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-danger-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
-          >
-            <Trash2 className="h-4 w-4" /> Delete
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
+const ActionsDropdown = ({ job, onToggleFeatured, onToggleActive, onDelete }) => (
+  <ActionsMenu>
+    {({ close }) => (
+      <>
+        <Link
+          to={`/jobs/${job.slug || job._id}`}
+          onClick={close}
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+          role="menuitem"
+        >
+          <Eye className="h-4 w-4" /> View Public Page
+        </Link>
+        <button
+          onClick={() => {
+            close();
+            onToggleActive(job);
+          }}
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+          role="menuitem"
+        >
+          {job.isActive ? (
+            <>
+              <PowerOff className="h-4 w-4" /> Deactivate Job
+            </>
+          ) : (
+            <>
+              <Power className="h-4 w-4 text-green-600 dark:text-green-400" /> Activate Job
+            </>
+          )}
+        </button>
+        <button
+          onClick={() => {
+            close();
+            onToggleFeatured(job);
+          }}
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+          role="menuitem"
+        >
+          <Star className={`h-4 w-4 ${job.isFeatured ? 'fill-amber-400 text-amber-400' : ''}`} />
+          {job.isFeatured ? 'Remove Featured' : 'Make Featured'}
+        </button>
+        <hr className="my-1 border-slate-200 dark:border-slate-700" />
+        <button
+          onClick={() => {
+            close();
+            onDelete(job);
+          }}
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-danger-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+          role="menuitem"
+        >
+          <Trash2 className="h-4 w-4" /> Delete
+        </button>
+      </>
+    )}
+  </ActionsMenu>
+);
 
 /* ─────────────────── Mobile Job Card ─────────────────── */
 
-const MobileJobCard = ({ job, onToggleFeatured, onDelete, togglingFeaturedId }) => {
+const MobileJobCard = ({ job, onToggleFeatured, onToggleActive, onDelete, togglingFeaturedId }) => {
   const jobType = JOB_TYPES.find((t) => t.value === job.type);
   const companyName = job.company?.companyName || `${job.company?.firstName || ''} ${job.company?.lastName || ''}`.trim();
 
@@ -107,8 +115,8 @@ const MobileJobCard = ({ job, onToggleFeatured, onDelete, togglingFeaturedId }) 
         </div>
         <ActionsDropdown
           job={job}
-          onView={() => {}}
           onToggleFeatured={onToggleFeatured}
+          onToggleActive={onToggleActive}
           onDelete={onDelete}
         />
       </div>
@@ -174,6 +182,8 @@ const ManageJobsPage = () => {
   const [sortOption, setSortOption] = useState('newest');
 
   const [togglingFeaturedId, setTogglingFeaturedId] = useState(null);
+  const [togglingActiveId, setTogglingActiveId] = useState(null);
+  const [activeTarget, setActiveTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -224,6 +234,29 @@ const ManageJobsPage = () => {
       toast.error(error.message || 'Failed to update featured status');
     } finally {
       setTogglingFeaturedId(null);
+    }
+  };
+
+  /* ── Toggle active (with confirmation) ── */
+  const handleConfirmToggleActive = async () => {
+    if (!activeTarget) return;
+    const job = activeTarget;
+    setTogglingActiveId(job._id);
+    const original = [...jobs];
+
+    setJobs((prev) =>
+      prev.map((j) => (j._id === job._id ? { ...j, isActive: !j.isActive } : j)),
+    );
+
+    try {
+      await adminService.toggleJobActive(job._id);
+      toast.success(`Job ${job.isActive ? 'deactivated' : 'activated'} successfully`);
+      setActiveTarget(null);
+    } catch (error) {
+      setJobs(original);
+      toast.error(error.message || 'Failed to update job status');
+    } finally {
+      setTogglingActiveId(null);
     }
   };
 
@@ -425,8 +458,8 @@ const ManageJobsPage = () => {
                       <td className="px-4 py-3">
                         <ActionsDropdown
                           job={job}
-                          onView={() => {}}
                           onToggleFeatured={handleToggleFeatured}
+                          onToggleActive={setActiveTarget}
                           onDelete={setDeleteTarget}
                         />
                       </td>
@@ -444,6 +477,7 @@ const ManageJobsPage = () => {
                 key={job._id}
                 job={job}
                 onToggleFeatured={handleToggleFeatured}
+                onToggleActive={setActiveTarget}
                 onDelete={setDeleteTarget}
                 togglingFeaturedId={togglingFeaturedId}
               />
@@ -473,6 +507,26 @@ const ManageJobsPage = () => {
         confirmText="Delete Job"
         variant="danger"
         isLoading={deleting}
+      />
+
+      {/* Active toggle confirmation */}
+      <ConfirmModal
+        isOpen={!!activeTarget}
+        onClose={() => setActiveTarget(null)}
+        onConfirm={handleConfirmToggleActive}
+        title={
+          activeTarget?.isActive
+            ? `Deactivate "${activeTarget?.title}"?`
+            : `Activate "${activeTarget?.title}"?`
+        }
+        message={
+          activeTarget?.isActive
+            ? 'This job will be hidden from the public job board and stop receiving applications until you reactivate it.'
+            : 'This job will become visible on the public job board and start accepting applications again.'
+        }
+        confirmText={activeTarget?.isActive ? 'Deactivate' : 'Activate'}
+        variant={activeTarget?.isActive ? 'danger' : 'primary'}
+        isLoading={togglingActiveId === activeTarget?._id}
       />
     </div>
   );

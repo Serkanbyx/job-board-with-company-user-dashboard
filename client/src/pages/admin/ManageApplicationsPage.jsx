@@ -12,6 +12,7 @@ import {
 import toast from 'react-hot-toast';
 import * as adminService from '../../api/adminService';
 import useDebounce from '../../hooks/useDebounce';
+import useLockBodyScroll from '../../hooks/useLockBodyScroll';
 import { APPLICATION_STATUSES } from '../../utils/constants';
 import { getInitials } from '../../utils/helpers';
 import SearchInput from '../../components/common/SearchInput';
@@ -25,6 +26,7 @@ const ITEMS_PER_PAGE = 20;
 /* ─────────────────── Application Detail Modal ─────────────────── */
 
 const ApplicationDetailModal = ({ application, onClose }) => {
+  useLockBodyScroll(!!application);
   if (!application) return null;
 
   const candidateName = `${application.candidate?.firstName || ''} ${application.candidate?.lastName || ''}`.trim();

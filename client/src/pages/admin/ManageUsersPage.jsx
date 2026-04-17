@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   Users,
-  MoreHorizontal,
   Eye,
   Shield,
   Trash2,
@@ -14,6 +13,7 @@ import toast from 'react-hot-toast';
 import * as adminService from '../../api/adminService';
 import { useAuth } from '../../contexts/AuthContext';
 import useDebounce from '../../hooks/useDebounce';
+import useLockBodyScroll from '../../hooks/useLockBodyScroll';
 import SearchInput from '../../components/common/SearchInput';
 import RoleBadge from '../../components/common/RoleBadge';
 import ToggleSwitch from '../../components/common/ToggleSwitch';
@@ -21,6 +21,7 @@ import Pagination from '../../components/common/Pagination';
 import ConfirmModal from '../../components/common/ConfirmModal';
 import EmptyState from '../../components/common/EmptyState';
 import SkeletonTable from '../../components/common/SkeletonTable';
+import ActionsMenu from '../../components/common/ActionsMenu';
 import { getInitials } from '../../utils/helpers';
 
 const ITEMS_PER_PAGE = 20;
@@ -47,61 +48,52 @@ const SORT_OPTIONS = [
 
 /* ─────────────────── Actions Dropdown ─────────────────── */
 
-const ActionsDropdown = ({ onViewDetails, onChangeRole, onDelete, isSelf }) => {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const handleClick = () => setOpen(false);
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, [open]);
-
-  return (
-    <div className="relative">
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((prev) => !prev);
-        }}
-        className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
-        aria-label="Actions"
-      >
-        <MoreHorizontal className="h-4 w-4" />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-          <button
-            onClick={onViewDetails}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
-          >
-            <Eye className="h-4 w-4" /> View Details
-          </button>
-          <button
-            onClick={onChangeRole}
-            disabled={isSelf}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300 dark:hover:bg-slate-700"
-          >
-            <Shield className="h-4 w-4" /> Change Role
-          </button>
-          <hr className="my-1 border-slate-200 dark:border-slate-700" />
-          <button
-            onClick={onDelete}
-            disabled={isSelf}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-danger-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-950/30"
-          >
-            <Trash2 className="h-4 w-4" /> Delete
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
+const ActionsDropdown = ({ onViewDetails, onChangeRole, onDelete, isSelf }) => (
+  <ActionsMenu>
+    {({ close }) => (
+      <>
+        <button
+          onClick={() => {
+            close();
+            onViewDetails();
+          }}
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+          role="menuitem"
+        >
+          <Eye className="h-4 w-4" /> View Details
+        </button>
+        <button
+          onClick={() => {
+            close();
+            onChangeRole();
+          }}
+          disabled={isSelf}
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300 dark:hover:bg-slate-700"
+          role="menuitem"
+        >
+          <Shield className="h-4 w-4" /> Change Role
+        </button>
+        <hr className="my-1 border-slate-200 dark:border-slate-700" />
+        <button
+          onClick={() => {
+            close();
+            onDelete();
+          }}
+          disabled={isSelf}
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-danger-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-red-400 dark:hover:bg-red-950/30"
+          role="menuitem"
+        >
+          <Trash2 className="h-4 w-4" /> Delete
+        </button>
+      </>
+    )}
+  </ActionsMenu>
+);
 
 /* ─────────────────── User Detail Modal ─────────────────── */
 
 const UserDetailModal = ({ user, onClose }) => {
+  useLockBodyScroll(!!user);
   if (!user) return null;
 
   const fullName = user.role === 'company'
@@ -197,9 +189,29 @@ const UserDetailModal = ({ user, onClose }) => {
 
 const ChangeRoleModal = ({ user, onClose, onConfirm, isLoading }) => {
   const [selectedRole, setSelectedRole] = useState('');
+  const [submitted, setSubmitted] = useState(false);
+
+  useLockBodyScroll(!!user);
+
+  // Reset when modal target changes
+  useEffect(() => {
+    setSelectedRole('');
+    setSubmitted(false);
+  }, [user?._id]);
+
   const roles = ['candidate', 'company', 'admin'].filter((r) => r !== user?.role);
+  const hasError = submitted && !selectedRole;
 
   if (!user) return null;
+
+  const handleSubmit = () => {
+    if (!selectedRole) {
+      setSubmitted(true);
+      toast.error('Please select a role before submitting.');
+      return;
+    }
+    onConfirm(user._id, selectedRole);
+  };
 
   const fullName = user.role === 'company'
     ? user.companyName || `${user.firstName} ${user.lastName}`
@@ -236,8 +248,16 @@ const ChangeRoleModal = ({ user, onClose, onConfirm, isLoading }) => {
           </label>
           <select
             value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 focus:outline-none dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+            onChange={(e) => {
+              setSelectedRole(e.target.value);
+              if (submitted) setSubmitted(false);
+            }}
+            className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:ring-2 focus:outline-none dark:bg-slate-700 dark:text-white ${
+              hasError
+                ? 'border-danger-400 focus:border-danger-500 focus:ring-danger-500/20 dark:border-danger-500'
+                : 'border-slate-300 focus:border-primary-500 focus:ring-primary-500/20 dark:border-slate-600'
+            }`}
+            aria-invalid={hasError}
           >
             <option value="">Select a role...</option>
             {roles.map((role) => (
@@ -246,6 +266,11 @@ const ChangeRoleModal = ({ user, onClose, onConfirm, isLoading }) => {
               </option>
             ))}
           </select>
+          {hasError && (
+            <p className="mt-1 text-xs text-danger-500" role="alert">
+              Please choose a role from the list before continuing.
+            </p>
+          )}
         </div>
 
         {selectedRole === 'admin' && (
@@ -268,8 +293,8 @@ const ChangeRoleModal = ({ user, onClose, onConfirm, isLoading }) => {
             Cancel
           </button>
           <button
-            onClick={() => onConfirm(user._id, selectedRole)}
-            disabled={!selectedRole || isLoading}
+            onClick={handleSubmit}
+            disabled={isLoading}
             className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:opacity-40"
           >
             {isLoading ? (
@@ -367,6 +392,7 @@ const ManageUsersPage = () => {
   const [sortOption, setSortOption] = useState('newest');
 
   const [togglingId, setTogglingId] = useState(null);
+  const [statusTarget, setStatusTarget] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const [roleTarget, setRoleTarget] = useState(null);
@@ -401,10 +427,16 @@ const ManageUsersPage = () => {
     fetchUsers(1);
   }, [fetchUsers]);
 
-  /* ── Toggle status (optimistic) ── */
-  const handleToggleStatus = async (targetUser) => {
+  /* ── Toggle status (with confirmation) ── */
+  const requestToggleStatus = (targetUser) => {
     if (targetUser._id === currentUser?._id) return;
+    setStatusTarget(targetUser);
+  };
 
+  const handleConfirmToggleStatus = async () => {
+    if (!statusTarget) return;
+
+    const targetUser = statusTarget;
     setTogglingId(targetUser._id);
     const newStatus = !targetUser.isActive;
     const original = [...users];
@@ -420,12 +452,27 @@ const ManageUsersPage = () => {
       } else {
         toast.success(`User ${newStatus ? 'activated' : 'deactivated'} successfully`);
       }
+      setStatusTarget(null);
     } catch (error) {
       setUsers(original);
       toast.error(error.message || 'Failed to update user status');
     } finally {
       setTogglingId(null);
     }
+  };
+
+  const getStatusConfirmMessage = (targetUser) => {
+    if (!targetUser) return '';
+    const name = targetUser.role === 'company'
+      ? targetUser.companyName || `${targetUser.firstName} ${targetUser.lastName}`
+      : `${targetUser.firstName} ${targetUser.lastName}`;
+    if (targetUser.isActive) {
+      const extra = targetUser.role === 'company'
+        ? ' All of their job listings will also be set to inactive.'
+        : '';
+      return `${name} will no longer be able to sign in or use the platform.${extra}`;
+    }
+    return `${name} will be able to sign in and use the platform again.`;
   };
 
   /* ── Change role ── */
@@ -610,7 +657,7 @@ const ManageUsersPage = () => {
                       <td className="px-4 py-3">
                         <ToggleSwitch
                           checked={u.isActive}
-                          onChange={() => handleToggleStatus(u)}
+                          onChange={() => requestToggleStatus(u)}
                           disabled={isSelf || togglingId === u._id}
                         />
                       </td>
@@ -661,7 +708,7 @@ const ManageUsersPage = () => {
                 user={u}
                 currentUserId={currentUser?._id}
                 togglingId={togglingId}
-                onToggleStatus={handleToggleStatus}
+                onToggleStatus={requestToggleStatus}
                 onViewDetails={setDetailTarget}
                 onChangeRole={setRoleTarget}
                 onDelete={setDeleteTarget}
@@ -703,6 +750,18 @@ const ManageUsersPage = () => {
         confirmText="Delete User"
         variant="danger"
         isLoading={deleting}
+      />
+
+      {/* Status Toggle Confirmation */}
+      <ConfirmModal
+        isOpen={!!statusTarget}
+        onClose={() => setStatusTarget(null)}
+        onConfirm={handleConfirmToggleStatus}
+        title={statusTarget?.isActive ? 'Deactivate this user?' : 'Activate this user?'}
+        message={getStatusConfirmMessage(statusTarget)}
+        confirmText={statusTarget?.isActive ? 'Deactivate' : 'Activate'}
+        variant={statusTarget?.isActive ? 'danger' : 'primary'}
+        isLoading={togglingId === statusTarget?._id}
       />
     </div>
   );

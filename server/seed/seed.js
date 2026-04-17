@@ -738,6 +738,17 @@ const weightedStatus = () => {
   return 'pending';
 };
 
+/**
+ * Returns a random Date in the past, between `minDays` and `maxDays` ago.
+ * Used to backdate seeded records so dashboard analytics (Today / Month-over-
+ * Month growth) reflect realistic activity instead of all-time totals.
+ */
+const daysAgo = (minDays, maxDays) => {
+  const days = randomInt(minDays, maxDays);
+  const ms = days * 86400000 + randomInt(0, 86_399_999);
+  return new Date(Date.now() - ms);
+};
+
 /* ------------------------------------------------------------------ */
 /*  SEED: ADMIN ONLY                                                   */
 /* ------------------------------------------------------------------ */
@@ -783,10 +794,16 @@ const seedFull = async () => {
   await User.create(adminConfig);
 
   // ── 2. Create company users ──
+  // Backdate company registrations across the last ~90 days so dashboard
+  // metrics like "Today" and "Month-over-Month growth" produce realistic
+  // numbers instead of equaling all-time totals.
   console.log('Creating company users...');
   const companies = [];
-  for (const data of companyUsers) {
-    const company = await User.create(data);
+  for (const [index, data] of companyUsers.entries()) {
+    // Spread registrations: oldest 90 days ago, newest a few days ago.
+    const offsetDays = 8 + index * 10;
+    const createdAt = daysAgo(offsetDays, offsetDays + 6);
+    const company = await User.create({ ...data, createdAt, updatedAt: createdAt });
     companies.push(company);
   }
   const companyMap = {};
@@ -795,19 +812,43 @@ const seedFull = async () => {
   });
 
   // ── 3. Create candidate users ──
+  // Backdate across last ~75 days; ensure a couple of "today" registrations
+  // and a handful in the previous 30-day window for realistic growth %.
   console.log('Creating candidate users...');
   const candidates = [];
-  for (const data of candidateUsers) {
-    const candidate = await User.create(data);
+  for (const [index, data] of candidateUsers.entries()) {
+    let createdAt;
+    if (index === 0) {
+      createdAt = daysAgo(0, 0); // today
+    } else if (index === 1) {
+      createdAt = daysAgo(2, 5);
+    } else if (index < 5) {
+      createdAt = daysAgo(8, 28);
+    } else {
+      createdAt = daysAgo(35, 75);
+    }
+    const candidate = await User.create({ ...data, createdAt, updatedAt: createdAt });
     candidates.push(candidate);
   }
 
   // ── 4. Create jobs ──
+  // Backdate job postings across the last ~60 days. A few are "today" so
+  // the dashboard's todayStats panel actually has data to display.
   console.log('Creating jobs...');
   const jobDataList = buildJobs(companyMap);
   const jobs = [];
-  for (const data of jobDataList) {
-    const job = await Job.create(data);
+  for (const [index, data] of jobDataList.entries()) {
+    let createdAt;
+    if (index < 2) {
+      createdAt = daysAgo(0, 0); // today
+    } else if (index < 6) {
+      createdAt = daysAgo(2, 6);
+    } else if (index < 14) {
+      createdAt = daysAgo(8, 28);
+    } else {
+      createdAt = daysAgo(30, 60);
+    }
+    const job = await Job.create({ ...data, createdAt, updatedAt: createdAt });
     jobs.push(job);
   }
 
@@ -816,6 +857,9 @@ const seedFull = async () => {
   const applications = [];
   const applicationPairs = new Set();
 
+  // Backdate applications across the last ~45 days, with a few created
+  // today so the dashboard's "Today → Applications" tile reflects real
+  // recent activity rather than the all-time total.
   for (const candidate of candidates) {
     const applyCount = randomInt(3, 6);
     const shuffledJobs = shuffleArray(jobs);
@@ -829,14 +873,35 @@ const seedFull = async () => {
       if (applicationPairs.has(pairKey)) continue;
       applicationPairs.add(pairKey);
 
+      // Application can only be created on/after the job's creation date.
+      const earliestMs = new Date(job.createdAt).getTime();
+      const nowMs = Date.now();
+      const minDaysSinceJob = Math.max(0, Math.floor((nowMs - earliestMs) / 86400000));
+      const maxAge = Math.min(45, minDaysSinceJob);
+
+      let appCreatedAt;
+      if (applications.length < 4) {
+        appCreatedAt = daysAgo(0, 0); // today
+      } else if (applications.length < 12) {
+        appCreatedAt = daysAgo(1, 6);
+      } else if (applications.length < 25 && maxAge >= 8) {
+        appCreatedAt = daysAgo(8, Math.min(28, maxAge));
+      } else if (maxAge >= 30) {
+        appCreatedAt = daysAgo(30, Math.min(45, maxAge));
+      } else {
+        appCreatedAt = daysAgo(0, Math.max(0, maxAge));
+      }
+
       const status = weightedStatus();
-      const statusHistory = [{ status: 'pending', changedAt: new Date(Date.now() - randomInt(1, 14) * 86400000), changedBy: candidate._id }];
+      const statusHistory = [
+        { status: 'pending', changedAt: appCreatedAt, changedBy: candidate._id },
+      ];
 
       if (status !== 'pending') {
         statusHistory.push({
           status,
           note: status === 'rejected' ? 'Position has been filled.' : undefined,
-          changedAt: new Date(),
+          changedAt: new Date(appCreatedAt.getTime() + randomInt(1, 7) * 86400000),
           changedBy: job.company,
         });
       }
@@ -850,6 +915,8 @@ const seedFull = async () => {
         status,
         statusNote: status === 'rejected' ? 'Position has been filled.' : undefined,
         statusHistory,
+        createdAt: appCreatedAt,
+        updatedAt: appCreatedAt,
       });
 
       applications.push(app);

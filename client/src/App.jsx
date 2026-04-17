@@ -104,6 +104,8 @@ const App = () => {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            {/* Admins use the shared /login page; this path keeps deep links working */}
+            <Route path="/admin/login" element={<LoginPage />} />
           </Route>
         </Route>
 

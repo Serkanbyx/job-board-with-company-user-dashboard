@@ -27,6 +27,9 @@ export const getAllJobsAdmin = (params) =>
 export const toggleJobFeatured = (id) =>
   axiosInstance.patch(`/admin/jobs/${id}/featured`).then((res) => res.data);
 
+export const toggleJobActive = (id) =>
+  axiosInstance.patch(`/admin/jobs/${id}/active`).then((res) => res.data);
+
 export const deleteJobAdmin = (id) =>
   axiosInstance.delete(`/admin/jobs/${id}`).then((res) => res.data);
 

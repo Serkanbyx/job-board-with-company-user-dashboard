@@ -467,6 +467,36 @@ export const toggleJobFeatured = async (req, res, next) => {
 };
 
 /**
+ * @desc    Toggle a job's active/inactive status (admin)
+ * @route   PATCH /api/admin/jobs/:id/active
+ * @access  Admin only
+ */
+export const toggleJobActive = async (req, res, next) => {
+  try {
+    const job = await Job.findById(req.params.id);
+
+    if (!job) {
+      return sendError(res, 404, 'Job not found.');
+    }
+
+    job.isActive = !job.isActive;
+    await job.save();
+
+    const updatedJob = await Job.findById(job._id)
+      .populate('company', 'companyName companyLogo firstName lastName');
+
+    sendSuccess(
+      res,
+      200,
+      { job: updatedJob },
+      `Job ${job.isActive ? 'activated' : 'deactivated'} successfully`
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
  * @desc    Delete any job with cascade (admin)
  * @route   DELETE /api/admin/jobs/:id
  * @access  Admin only
