@@ -140,11 +140,12 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: '',
     companyName: '',
-    industry: '',
+    companyIndustry: '',
     companySize: '',
-    website: '',
+    companyWebsite: '',
+    companyLocation: '',
+    companyAbout: '',
     location: '',
-    about: '',
     title: '',
     experienceLevel: '',
   });
@@ -230,15 +231,15 @@ const RegisterPage = () => {
 
       if (formData.role === 'company') {
         payload.companyName = formData.companyName;
-        if (formData.industry) payload.industry = formData.industry;
+        if (formData.companyIndustry) payload.companyIndustry = formData.companyIndustry;
         if (formData.companySize) payload.companySize = formData.companySize;
-        if (formData.website) payload.website = formData.website;
-        if (formData.location) payload.location = formData.location;
-        if (formData.about) payload.about = formData.about;
+        if (formData.companyWebsite) payload.companyWebsite = formData.companyWebsite;
+        if (formData.companyLocation) payload.companyLocation = formData.companyLocation;
+        if (formData.companyAbout) payload.companyAbout = formData.companyAbout;
       } else {
         if (formData.title) payload.title = formData.title;
         if (formData.location) payload.location = formData.location;
-        if (formData.experienceLevel) payload.experienceLevel = formData.experienceLevel;
+        if (formData.experienceLevel) payload.experience = formData.experienceLevel;
       }
 
       const data = await register(payload);
@@ -503,11 +504,11 @@ const RegisterPage = () => {
       </div>
 
       <FormSelect
-        id="industry"
-        name="industry"
+        id="companyIndustry"
+        name="companyIndustry"
         label="Industry"
         options={COMPANY_INDUSTRIES}
-        value={formData.industry}
+        value={formData.companyIndustry}
         onChange={handleChange}
       />
 
@@ -521,43 +522,43 @@ const RegisterPage = () => {
       />
 
       <FormInput
-        id="website"
-        name="website"
+        id="companyWebsite"
+        name="companyWebsite"
         label="Company Website"
         icon={Globe}
         placeholder="https://example.com"
-        value={formData.website}
+        value={formData.companyWebsite}
         onChange={handleChange}
       />
 
       <FormInput
-        id="location"
-        name="location"
+        id="companyLocation"
+        name="companyLocation"
         label="Location"
         icon={MapPin}
         placeholder="San Francisco, CA"
-        value={formData.location}
+        value={formData.companyLocation}
         onChange={handleChange}
       />
 
       <div>
-        <label htmlFor="about" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
+        <label htmlFor="companyAbout" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
           About Company
         </label>
         <div className="relative">
           <textarea
-            id="about"
-            name="about"
+            id="companyAbout"
+            name="companyAbout"
             rows={3}
             maxLength={500}
             placeholder="Tell us about your company..."
-            value={formData.about}
+            value={formData.companyAbout}
             onChange={handleChange}
             className="w-full resize-none rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 outline-none transition-colors focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 dark:border-slate-600 dark:bg-slate-700 dark:text-white dark:placeholder-slate-400 dark:focus:border-primary-400"
           />
         </div>
         <p className="mt-1 text-right text-xs text-slate-400">
-          {formData.about.length}/500
+          {formData.companyAbout.length}/500
         </p>
       </div>
     </div>

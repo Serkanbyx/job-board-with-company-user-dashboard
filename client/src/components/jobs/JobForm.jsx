@@ -167,14 +167,13 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
     setErrors(newErrors);
   }, [form]);
 
-  const isValid = Object.keys(errors).length === 0;
-
   /* ── Submit ── */
   const handleSubmit = (e) => {
     e.preventDefault();
     setTouched({
       title: true, description: true, type: true,
       location: true, skills: true, deadline: true,
+      salaryMin: true,
     });
 
     const validationErrors = validate(form);
@@ -572,7 +571,7 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
           </Link>
           <button
             type="submit"
-            disabled={isLoading || !isValid}
+            disabled={isLoading}
             className="inline-flex items-center gap-2 rounded-lg bg-primary-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? (

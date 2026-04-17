@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Job from '../models/Job.js';
 import User from '../models/User.js';
 import Application from '../models/Application.js';
@@ -309,7 +310,12 @@ export const getJobBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params;
 
-    const job = await Job.findOne({ slug }).populate('company', COMPANY_POPULATE_FULL);
+    // Accept either a slug or a Mongo ObjectId so legacy/missing-slug jobs stay reachable
+    const lookup = mongoose.isValidObjectId(slug)
+      ? { $or: [{ slug }, { _id: slug }] }
+      : { slug };
+
+    const job = await Job.findOne(lookup).populate('company', COMPANY_POPULATE_FULL);
 
     if (!job) {
       return sendError(res, 404, 'Job not found.');
@@ -325,7 +331,7 @@ export const getJobBySlug = async (req, res, next) => {
 
     // Increment views atomically — only for non-owner views
     if (!isOwner) {
-      await Job.findOneAndUpdate({ slug }, { $inc: { views: 1 } });
+      await Job.findByIdAndUpdate(job._id, { $inc: { views: 1 } });
     }
 
     sendSuccess(res, 200, { job }, 'Job retrieved successfully');
@@ -353,17 +359,26 @@ export const getMyJobs = async (req, res, next) => {
       filter.isActive = false;
     }
 
-    const [jobs, total] = await Promise.all([
+    const [jobs, total, totalJobs, activeJobs] = await Promise.all([
       Job.find(filter)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit),
       Job.countDocuments(filter),
+      Job.countDocuments({ company: req.user._id }),
+      Job.countDocuments({ company: req.user._id, isActive: true }),
     ]);
 
     const totalPages = Math.ceil(total / limit);
 
-    sendPaginated(res, jobs, { page, totalPages, total, limit });
+    res.status(200).json({
+      success: true,
+      data: jobs,
+      pagination: { page, totalPages, total, limit },
+      totalJobs,
+      activeJobs,
+      inactiveJobs: totalJobs - activeJobs,
+    });
   } catch (error) {
     next(error);
   }

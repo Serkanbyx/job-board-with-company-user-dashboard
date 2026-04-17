@@ -168,13 +168,16 @@ const ApplyModal = ({ isOpen, onClose, job, userCvUrl, onSuccess }) => {
     setHasUnsavedChanges(true);
 
     try {
-      const data = await uploadService.uploadCV(file);
-      setUploadedCv({ url: data.url, filename: file.name });
+      const res = await uploadService.uploadCV(file);
+      // API envelope: { success, message, data: { url, publicId } }
+      const url = res?.data?.url || res?.url;
+      if (!url) throw new Error('Missing upload URL in server response.');
+      setUploadedCv({ url, filename: file.name });
       setUploadStatus('uploaded');
       setCvSource('upload');
     } catch (err) {
       setUploadStatus('error');
-      setUploadError(err.response?.data?.message || 'Upload failed. Please try again.');
+      setUploadError(err.response?.data?.message || err.message || 'Upload failed. Please try again.');
     }
   };
 
@@ -254,11 +257,18 @@ const ApplyModal = ({ isOpen, onClose, job, userCvUrl, onSuccess }) => {
               id="apply-modal-title"
               className="text-lg font-semibold text-slate-900 dark:text-white"
             >
-              Apply to {job.title}
+              {job?.title ? `Apply to ${job.title}` : 'Apply to this job'}
             </h2>
-            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-              at {job.company?.companyName || 'Company'}
-            </p>
+            {(() => {
+              const companyName =
+                job?.company?.companyName ||
+                `${job?.company?.firstName || ''} ${job?.company?.lastName || ''}`.trim();
+              return companyName ? (
+                <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
+                  at {companyName}
+                </p>
+              ) : null;
+            })()}
           </div>
           <button
             ref={firstFocusRef}
@@ -378,17 +388,29 @@ const ApplyModal = ({ isOpen, onClose, job, userCvUrl, onSuccess }) => {
                     />
 
                     {uploadStatus === 'idle' && (
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed border-slate-300 p-6 text-slate-500 transition-colors hover:border-primary-400 hover:text-primary-600 dark:border-slate-600 dark:text-slate-400 dark:hover:border-primary-500"
-                      >
-                        <Upload className="h-8 w-8" />
-                        <span className="text-sm font-medium">
-                          Click to upload your CV
-                        </span>
-                        <span className="text-xs">PDF only, up to 5MB</span>
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className={`flex w-full flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 transition-colors hover:border-primary-400 hover:text-primary-600 dark:hover:border-primary-500 ${
+                            uploadError
+                              ? 'border-danger-300 text-danger-600 dark:border-danger-700 dark:text-danger-400'
+                              : 'border-slate-300 text-slate-500 dark:border-slate-600 dark:text-slate-400'
+                          }`}
+                        >
+                          <Upload className="h-8 w-8" />
+                          <span className="text-sm font-medium">
+                            Click to upload your CV
+                          </span>
+                          <span className="text-xs">PDF only, up to 5MB</span>
+                        </button>
+                        {uploadError && (
+                          <div className="flex items-center gap-2 rounded-lg border border-danger-200 bg-danger-50 px-3 py-2 text-xs text-danger-700 dark:border-danger-800 dark:bg-danger-950/30 dark:text-danger-300">
+                            <AlertCircle className="h-4 w-4 shrink-0" />
+                            {uploadError}
+                          </div>
+                        )}
+                      </>
                     )}
 
                     {uploadStatus === 'uploading' && (
@@ -657,9 +679,15 @@ const ApplyModal = ({ isOpen, onClose, job, userCvUrl, onSuccess }) => {
           {currentStep < 3 ? (
             <button
               type="button"
-              onClick={() => setCurrentStep((prev) => prev + 1)}
-              disabled={currentStep === 1 && !canProceedStep1()}
-              className="flex items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
+              onClick={() => {
+                if (currentStep === 1 && !canProceedStep1()) {
+                  setUploadError('Please upload your CV (PDF) before continuing.');
+                  toast.error('Please upload your CV before continuing.');
+                  return;
+                }
+                setCurrentStep((prev) => prev + 1);
+              }}
+              className="flex items-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700"
             >
               Next
               <ChevronRight className="h-4 w-4" />

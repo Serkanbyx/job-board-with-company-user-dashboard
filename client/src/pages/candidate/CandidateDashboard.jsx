@@ -475,12 +475,12 @@ const CandidateDashboard = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [dashboardData, savedData] = await Promise.all([
+        const [dashboardRes, savedRes] = await Promise.all([
           userService.getCandidateDashboardStats(),
           savedJobService.getMySavedJobs({ limit: 1 }),
         ]);
-        setStats(dashboardData);
-        setSavedJobsCount(savedData.pagination?.total || 0);
+        setStats(dashboardRes?.data || dashboardRes);
+        setSavedJobsCount(savedRes?.pagination?.total || 0);
       } catch (error) {
         toast.error(error.message || 'Failed to load dashboard data');
       } finally {

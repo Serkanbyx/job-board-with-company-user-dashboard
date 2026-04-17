@@ -31,6 +31,7 @@ export const register = async (req, res, next) => {
       companyIndustry,
       title,
       location,
+      experience,
     } = req.body;
 
     if (role === 'admin') {
@@ -64,6 +65,7 @@ export const register = async (req, res, next) => {
       companyIndustry,
       title,
       location,
+      experience,
     });
 
     user.lastLoginAt = new Date();

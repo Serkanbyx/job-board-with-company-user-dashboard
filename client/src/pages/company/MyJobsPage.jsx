@@ -190,7 +190,8 @@ const MyJobsPage = () => {
       if (data.totalJobs !== undefined || data.activeJobs !== undefined) {
         const all = data.totalJobs ?? data.pagination?.total ?? jobList.length;
         const active = data.activeJobs ?? jobList.filter((j) => j.isActive).length;
-        setTabCounts({ all, active, inactive: all - active });
+        const inactive = data.inactiveJobs ?? Math.max(0, all - active);
+        setTabCounts({ all, active, inactive });
       } else {
         setTabCounts((prev) => ({ ...prev, [activeTab]: data.pagination?.total || jobList.length }));
       }

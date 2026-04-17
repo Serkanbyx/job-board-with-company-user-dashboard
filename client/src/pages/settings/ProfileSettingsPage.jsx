@@ -95,7 +95,8 @@ const ProfileSettingsPage = () => {
 
     setAvatarUploading(true);
     try {
-      const { url } = await uploadService.uploadImage(file);
+      const res = await uploadService.uploadImage(file);
+      const url = res?.data?.url || res?.url;
       setFormData((prev) => ({ ...prev, avatar: url }));
       toast.success('Photo uploaded!');
     } catch {
@@ -112,7 +113,8 @@ const ProfileSettingsPage = () => {
 
     setLogoUploading(true);
     try {
-      const { url } = await uploadService.uploadImage(file);
+      const res = await uploadService.uploadImage(file);
+      const url = res?.data?.url || res?.url;
       setFormData((prev) => ({ ...prev, companyLogo: url }));
       toast.success('Logo uploaded!');
     } catch {
@@ -129,7 +131,8 @@ const ProfileSettingsPage = () => {
 
     setCvUploading(true);
     try {
-      const { url } = await uploadService.uploadCV(file);
+      const res = await uploadService.uploadCV(file);
+      const url = res?.data?.url || res?.url;
       setFormData((prev) => ({ ...prev, cvUrl: url }));
       toast.success('CV uploaded!');
     } catch {
@@ -193,9 +196,13 @@ const ProfileSettingsPage = () => {
         });
       }
 
-      const { user: updatedUser } = await authService.updateProfile(payload);
-      updateUser(updatedUser);
-      setInitialData(buildFormData(updatedUser));
+      const res = await authService.updateProfile(payload);
+      // API envelope: { success, message, data: { user } }
+      const updatedUser = res?.data?.user || res?.user;
+      if (updatedUser) {
+        updateUser(updatedUser);
+        setInitialData(buildFormData(updatedUser));
+      }
       toast.success('Profile updated!');
     } catch (err) {
       toast.error(err?.response?.data?.message || 'Failed to update profile.');
@@ -217,14 +224,14 @@ const ProfileSettingsPage = () => {
     <form onSubmit={handleSubmit} className="space-y-8">
       {/* Unsaved changes bar */}
       {hasChanges && (
-        <div className="flex items-center justify-between rounded-lg border border-warning-300 bg-warning-50 px-4 py-3 dark:border-warning-700 dark:bg-warning-950/30">
-          <p className="text-sm font-medium text-warning-700 dark:text-warning-400">
+        <div className="flex items-center justify-between rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-700 dark:bg-amber-950/30">
+          <p className="text-sm font-medium text-amber-700 dark:text-amber-300">
             You have unsaved changes
           </p>
           <button
             type="button"
             onClick={() => setFormData(initialData)}
-            className="text-sm font-medium text-warning-700 underline hover:text-warning-800 dark:text-warning-400"
+            className="text-sm font-medium text-amber-700 underline hover:text-amber-800 dark:text-amber-300"
           >
             Discard
           </button>

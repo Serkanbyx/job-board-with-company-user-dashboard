@@ -12,6 +12,7 @@ const getTypeLabel = (value) =>
 
 const JobCard = ({ job }) => {
   const {
+    _id,
     title,
     slug,
     company,
@@ -26,10 +27,11 @@ const JobCard = ({ job }) => {
 
   const expired = deadline && isExpired(deadline);
   const companyName = company?.companyName || `${company?.firstName || ''} ${company?.lastName || ''}`.trim();
+  const detailHref = slug ? `/jobs/${slug}` : `/jobs/${_id}`;
 
   return (
     <Link
-      to={`/jobs/${slug}`}
+      to={detailHref}
       className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-primary-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:hover:border-primary-600"
     >
       {/* Header */}

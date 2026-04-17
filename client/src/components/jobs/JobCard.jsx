@@ -30,7 +30,8 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
   const expired = deadline && isExpired(deadline);
   const daysLeft = deadline ? daysUntil(deadline) : null;
   const companyName = company?.companyName || `${company?.firstName || ''} ${company?.lastName || ''}`.trim();
-  const companyId = company?._id || company?.id;
+  // Fall back to id-based URL if slug is missing — preserves clickability of legacy data
+  const detailHref = slug ? `/jobs/${slug}` : `/jobs/${_id}`;
 
   const [heartAnimating, setHeartAnimating] = useState(false);
 
@@ -77,7 +78,7 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
   if (variant === 'list') {
     return (
       <Link
-        to={`/jobs/${slug}`}
+        to={detailHref}
         className="group flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-primary-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:hover:border-primary-600"
       >
         {/* Company logo */}
@@ -100,16 +101,7 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
               <h3 className="text-base font-semibold text-slate-900 group-hover:text-primary-600 dark:text-white dark:group-hover:text-primary-400">
                 {title}
               </h3>
-              <p
-                className="text-sm text-slate-500 hover:text-primary-600 dark:text-slate-400"
-                onClick={(e) => {
-                  if (companyId) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    window.location.href = `/company/${companyId}`;
-                  }
-                }}
-              >
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 {companyName}
               </p>
             </div>
@@ -196,7 +188,7 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
   // Grid variant (default)
   return (
     <Link
-      to={`/jobs/${slug}`}
+      to={detailHref}
       className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 transition-all hover:border-primary-300 hover:shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:hover:border-primary-600"
     >
       {/* Header */}
