@@ -1,9 +1,22 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Briefcase } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 const Footer = () => {
+  const { pathname } = useLocation();
+  const { isAdmin } = useAuth();
+
+  // Offset the footer when the fixed admin sidebar is visible so its content
+  // is not hidden underneath it on admin and admin-viewed settings pages.
+  const sidebarVisible =
+    pathname.startsWith('/admin') ||
+    (isAdmin && pathname.startsWith('/settings'));
+  const wrapperPadding = sidebarVisible ? 'lg:pl-70' : '';
+
   return (
-    <footer className="border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+    <footer
+      className={`border-t border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${wrapperPadding}`}
+    >
       <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:px-6 lg:px-8">
         <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
           <Briefcase className="h-4 w-4" />

@@ -23,7 +23,9 @@ const SettingsLayout = () => {
   const { pathname } = useLocation();
   const { isAdmin } = useAuth();
 
-  const wrapperClass = isAdmin ? 'w-full lg:ml-70' : '';
+  // Use padding (with box-sizing: border-box) instead of a margin so the
+  // wrapper never exceeds the viewport width when the fixed sidebar is shown.
+  const wrapperClass = isAdmin ? 'lg:pl-70' : '';
 
   return (
     <>
