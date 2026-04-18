@@ -91,10 +91,15 @@ body {
   animation: shake 0.5s ease-in-out;
 }
 
-/* Fade-in — page transitions, general reveal */
+/* Fade-in — page transitions, general reveal.
+   IMPORTANT: the `to` state uses `transform: none` (not `translateY(0)`).
+   With `animation-fill-mode: both`, the final keyframe styles persist after
+   the animation ends. Any non-`none` transform on a wrapper would create a
+   containing block for `position: fixed` descendants, breaking modals that
+   rely on `fixed inset-0` being viewport-relative. */
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: none; }
 }
 .animate-fade-in {
   animation: fadeIn 0.35s ease-out both;

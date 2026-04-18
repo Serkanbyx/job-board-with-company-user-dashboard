@@ -1,12 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { Bell, CheckCheck } from 'lucide-react';
 import { useNotifications } from '../../hooks/useNotifications';
 import NotificationItem from './NotificationItem';
 
-const NotificationDropdown = ({ isOpen, onClose }) => {
+// Note: outside-click and Escape handling is owned by the parent (Navbar),
+// whose ref wraps both the trigger button and this dropdown. Adding another
+// outside-click handler here would close the panel on mousedown and let the
+// trigger's click handler reopen it immediately (toggle gets out of sync).
+const NotificationDropdown = ({ isOpen }) => {
   const { notifications, unreadCount, refreshNotifications, markOneAsRead, markAllRead } =
     useNotifications();
-  const dropdownRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -14,32 +17,10 @@ const NotificationDropdown = ({ isOpen, onClose }) => {
     }
   }, [isOpen, refreshNotifications]);
 
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        onClose();
-      }
-    };
-
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose();
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
   return (
     <div
-      ref={dropdownRef}
       role="region"
       aria-label="Notifications"
       className="animate-dropdown-in absolute right-0 top-full z-50 mt-2 w-80 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg sm:w-96 dark:border-slate-700 dark:bg-slate-800"
