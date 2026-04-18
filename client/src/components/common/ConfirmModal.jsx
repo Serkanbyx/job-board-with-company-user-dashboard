@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { X } from 'lucide-react';
 import useLockBodyScroll from '../../hooks/useLockBodyScroll';
+import ModalPortal from './ModalPortal';
 
 const VARIANT_STYLES = {
   danger: 'bg-danger-600 hover:bg-danger-700 focus:ring-danger-500',
@@ -82,12 +83,13 @@ const ConfirmModal = ({
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-modal-title"
-    >
+    <ModalPortal>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="confirm-modal-title"
+      >
       {/* Backdrop */}
       <div
         className="animate-backdrop-in absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -172,7 +174,8 @@ const ConfirmModal = ({
           </button>
         </div>
       </div>
-    </div>
+      </div>
+    </ModalPortal>
   );
 };
 

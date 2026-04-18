@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronDown, X, SlidersHorizontal } from 'lucide-react';
 import TagInput from '../common/TagInput';
+import ModalPortal from '../common/ModalPortal';
 import {
   JOB_TYPES,
   EXPERIENCE_LEVELS,
@@ -270,20 +271,22 @@ const JobFilters = ({ filters, onFilterChange, onClearAll, stats = {}, isOpen, o
   if (typeof isOpen !== 'undefined') {
     return (
       <>
-        {/* Backdrop */}
-        {isOpen && (
-          <div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
-            onClick={onClose}
-          />
-        )}
+        {/* Mobile sheet rendered via portal so `fixed` positioning is always
+            viewport-relative — never trapped inside an animated/transformed
+            ancestor that would create a containing block. */}
+        <ModalPortal>
+          {isOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+              onClick={onClose}
+            />
+          )}
 
-        {/* Slide-in panel */}
-        <div
-          className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] transform overflow-y-auto bg-white p-5 shadow-2xl transition-transform duration-300 lg:hidden dark:bg-slate-800 ${
-            isOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
-        >
+          <div
+            className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] transform overflow-y-auto bg-white p-5 shadow-2xl transition-transform duration-300 lg:hidden dark:bg-slate-800 ${
+              isOpen ? 'translate-x-0' : '-translate-x-full'
+            }`}
+          >
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Filters</h2>
             <button
@@ -309,9 +312,11 @@ const JobFilters = ({ filters, onFilterChange, onClearAll, stats = {}, isOpen, o
               Apply Filters
             </button>
           </div>
-        </div>
+          </div>
+        </ModalPortal>
 
-        {/* Desktop: static sidebar */}
+        {/* Desktop: static sidebar (must NOT be portal'd — `sticky` relies on
+            its real DOM position to compute scroll context). */}
         <aside className="sticky top-24 hidden h-fit w-[280px] shrink-0 overflow-y-auto rounded-xl border border-slate-200 bg-white p-5 lg:block dark:border-slate-700 dark:bg-slate-800">
           {filterContent}
         </aside>

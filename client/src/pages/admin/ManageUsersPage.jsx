@@ -22,6 +22,7 @@ import ConfirmModal from '../../components/common/ConfirmModal';
 import EmptyState from '../../components/common/EmptyState';
 import SkeletonTable from '../../components/common/SkeletonTable';
 import ActionsMenu from '../../components/common/ActionsMenu';
+import ModalPortal from '../../components/common/ModalPortal';
 import { getInitials } from '../../utils/helpers';
 
 const ITEMS_PER_PAGE = 20;
@@ -101,18 +102,19 @@ const UserDetailModal = ({ user, onClose }) => {
     : `${user.firstName} ${user.lastName}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-800">
-        <button
-          onClick={onClose}
-          className="absolute right-3 top-3 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
-          aria-label="Close"
-        >
-          <X className="h-4 w-4" />
-        </button>
+    <ModalPortal>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative z-10 w-full max-w-lg rounded-xl bg-white p-6 shadow-xl dark:bg-slate-800">
+          <button
+            onClick={onClose}
+            className="absolute right-3 top-3 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
+          </button>
 
-        <div className="mb-4 flex items-center gap-4">
+          <div className="mb-4 flex items-center gap-4">
           {user.avatar || user.companyLogo ? (
             <img
               src={user.avatar || user.companyLogo}
@@ -179,9 +181,10 @@ const UserDetailModal = ({ user, onClose }) => {
               <span className="text-slate-700 dark:text-slate-300">{user.location}</span>
             </div>
           )}
+          </div>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 };
 
@@ -222,9 +225,10 @@ const ChangeRoleModal = ({ user, onClose, onConfirm, isLoading }) => {
     : `${user.firstName} ${user.lastName}`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !isLoading && onClose()} />
-      <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-800">
+    <ModalPortal>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !isLoading && onClose()} />
+        <div className="relative z-10 w-full max-w-md rounded-xl bg-white p-6 shadow-xl dark:bg-slate-800">
         <button
           onClick={onClose}
           disabled={isLoading}
@@ -311,8 +315,9 @@ const ChangeRoleModal = ({ user, onClose, onConfirm, isLoading }) => {
             )}
           </button>
         </div>
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 };
 

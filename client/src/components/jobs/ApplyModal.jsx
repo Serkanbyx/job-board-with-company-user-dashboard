@@ -15,6 +15,7 @@ import toast from 'react-hot-toast';
 import * as uploadService from '../../api/uploadService';
 import * as applicationService from '../../api/applicationService';
 import CharacterCounter from '../common/CharacterCounter';
+import ModalPortal from '../common/ModalPortal';
 
 const STEPS = [
   { id: 1, label: 'CV Upload' },
@@ -233,12 +234,13 @@ const ApplyModal = ({ isOpen, onClose, job, userCvUrl, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="apply-modal-title"
-    >
+    <ModalPortal>
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="apply-modal-title"
+      >
       {/* Backdrop */}
       <div
         className="animate-backdrop-in absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -711,7 +713,8 @@ const ApplyModal = ({ isOpen, onClose, job, userCvUrl, onSuccess }) => {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </ModalPortal>
   );
 };
 

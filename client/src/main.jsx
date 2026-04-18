@@ -6,6 +6,7 @@ import App from './App.jsx';
 import { AuthProvider } from './contexts/AuthContext';
 import { PreferencesProvider } from './contexts/PreferencesContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { SidebarProvider } from './contexts/SidebarContext';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -13,7 +14,9 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <PreferencesProvider>
           <NotificationProvider>
-            <App />
+            <SidebarProvider>
+              <App />
+            </SidebarProvider>
           </NotificationProvider>
         </PreferencesProvider>
       </AuthProvider>

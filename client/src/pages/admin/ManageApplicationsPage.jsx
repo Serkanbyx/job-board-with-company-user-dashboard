@@ -20,6 +20,7 @@ import StatusBadge from '../../components/common/StatusBadge';
 import Pagination from '../../components/common/Pagination';
 import EmptyState from '../../components/common/EmptyState';
 import SkeletonTable from '../../components/common/SkeletonTable';
+import ModalPortal from '../../components/common/ModalPortal';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -32,9 +33,10 @@ const ApplicationDetailModal = ({ application, onClose }) => {
   const candidateName = `${application.candidate?.firstName || ''} ${application.candidate?.lastName || ''}`.trim();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl dark:bg-slate-800">
+    <ModalPortal>
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+        <div className="relative z-10 max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-xl dark:bg-slate-800">
         <button
           onClick={onClose}
           className="absolute right-3 top-3 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
@@ -150,9 +152,10 @@ const ApplicationDetailModal = ({ application, onClose }) => {
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 };
 

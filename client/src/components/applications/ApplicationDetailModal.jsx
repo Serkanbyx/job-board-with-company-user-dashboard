@@ -20,6 +20,7 @@ import { getInitials } from '../../utils/helpers';
 import { formatDate } from '../../utils/formatDate';
 import StatusBadge from '../common/StatusBadge';
 import CharacterCounter from '../common/CharacterCounter';
+import ModalPortal from '../common/ModalPortal';
 import StatusTimeline from './StatusTimeline';
 
 const MAX_NOTES_LENGTH = 2000;
@@ -107,12 +108,13 @@ const ApplicationDetailModal = ({ isOpen, onClose, application, onStatusUpdate }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-end"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Application Details"
-    >
+    <ModalPortal>
+      <div
+        className="fixed inset-0 z-50 flex items-start justify-end"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Application Details"
+      >
       {/* Backdrop */}
       <div
         className="animate-backdrop-in absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -458,7 +460,8 @@ const ApplicationDetailModal = ({ isOpen, onClose, application, onStatusUpdate }
           </section>
         </div>
       </div>
-    </div>
+      </div>
+    </ModalPortal>
   );
 };
 

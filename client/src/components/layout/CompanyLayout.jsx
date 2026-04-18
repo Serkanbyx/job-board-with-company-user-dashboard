@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import ErrorBoundary from '../common/ErrorBoundary';
 import {
@@ -7,11 +7,12 @@ import {
   PlusCircle,
   BarChart3,
   Settings,
-  Menu,
   X,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useRegisterSidebar } from '../../hooks/useSidebar';
 import { getInitials } from '../../utils/helpers';
+import ModalPortal from '../common/ModalPortal';
 
 const NAV_ITEMS = [
   { to: '/company/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,6 +25,11 @@ const NAV_ITEMS = [
 const CompanyLayout = () => {
   const { user } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Expose the open trigger to the Navbar via shared context so the mobile
+  // hamburger lives inside the header (no floating button overlapping content).
+  const openSidebar = useCallback(() => setSidebarOpen(true), []);
+  useRegisterSidebar(openSidebar);
 
   const sidebarContent = (
     <div className="flex h-full flex-col">
@@ -79,19 +85,10 @@ const CompanyLayout = () => {
         {sidebarContent}
       </aside>
 
-      {/* Mobile sidebar toggle */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        aria-label="Open sidebar"
-        className="fixed top-24 left-0 z-30 flex items-center gap-1.5 rounded-r-lg border border-l-0 border-slate-200 bg-white/90 py-2.5 pr-2.5 pl-2 text-xs font-medium text-slate-600 shadow-md backdrop-blur-sm transition-all hover:bg-white hover:pl-3 lg:hidden dark:border-slate-700 dark:bg-slate-800/90 dark:text-slate-300 dark:hover:bg-slate-800"
-      >
-        <Menu className="h-4 w-4" />
-        <span className="hidden sm:inline">Menu</span>
-      </button>
-
-      {/* Mobile sidebar overlay */}
+      {/* Mobile sidebar overlay (trigger lives in the Navbar via SidebarContext).
+          Portal'd so `fixed` positioning is always viewport-relative. */}
       {sidebarOpen && (
-        <>
+        <ModalPortal>
           <div
             className="animate-backdrop-in fixed inset-0 top-16 z-40 bg-black/30 lg:hidden"
             onClick={() => setSidebarOpen(false)}
@@ -106,7 +103,7 @@ const CompanyLayout = () => {
             </button>
             {sidebarContent}
           </aside>
-        </>
+        </ModalPortal>
       )}
 
       {/* Content area */}
