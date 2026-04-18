@@ -12,7 +12,7 @@ import EmptyState from '../../components/common/EmptyState';
 
 import { getAllJobs, getJobStats } from '../../api/jobService';
 import { checkSavedStatus, toggleSaveJob } from '../../api/savedJobService';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import useDebounce from '../../hooks/useDebounce';
 import { SORT_OPTIONS } from '../../utils/constants';
 import { pluralize } from '../../utils/helpers';

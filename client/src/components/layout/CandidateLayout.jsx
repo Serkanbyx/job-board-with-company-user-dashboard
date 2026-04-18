@@ -9,7 +9,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { getInitials } from '../../utils/helpers';
 
 const NAV_ITEMS = [

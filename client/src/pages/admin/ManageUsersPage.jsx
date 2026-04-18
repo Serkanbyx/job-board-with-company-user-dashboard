@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as adminService from '../../api/adminService';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import useDebounce from '../../hooks/useDebounce';
 import useLockBodyScroll from '../../hooks/useLockBodyScroll';
 import SearchInput from '../../components/common/SearchInput';

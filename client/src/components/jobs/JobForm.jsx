@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Save, X } from 'lucide-react';
 import {
@@ -99,19 +99,19 @@ const validate = (form) => {
 
 const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) => {
   const [form, setForm] = useState(() => buildInitialState(initialData));
-  const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
-  const [showDraftPrompt, setShowDraftPrompt] = useState(false);
-  const autoSaveRef = useRef(null);
-
-  /* ── Draft restoration (only in create mode) ── */
-  useEffect(() => {
-    if (mode !== 'create') return;
+  // Read the existing draft synchronously on mount so we don't trigger an
+  // extra render via setState-in-effect. localStorage is a synchronous API
+  // available during render, so a lazy initializer is the right tool.
+  const [showDraftPrompt, setShowDraftPrompt] = useState(() => {
+    if (mode !== 'create') return false;
     try {
-      const saved = localStorage.getItem(DRAFT_KEY);
-      if (saved) setShowDraftPrompt(true);
-    } catch { /* noop */ }
-  }, [mode]);
+      return Boolean(localStorage.getItem(DRAFT_KEY));
+    } catch {
+      return false;
+    }
+  });
+  const autoSaveRef = useRef(null);
 
   const restoreDraft = () => {
     try {
@@ -139,10 +139,15 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
     return () => clearInterval(autoSaveRef.current);
   }, [form, mode]);
 
-  /* ── Populate from initialData when editing ── */
-  useEffect(() => {
+  /* ── Populate from initialData when editing ──
+     Tracks the previous prop reference and resets the form during render
+     instead of inside an effect. This avoids the cascading re-render that
+     happens when setState is called synchronously inside useEffect.        */
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+  if (initialData !== prevInitialData) {
+    setPrevInitialData(initialData);
     if (initialData) setForm(buildInitialState(initialData));
-  }, [initialData]);
+  }
 
   /* ── Field handlers ── */
   const handleChange = useCallback((field, value) => {
@@ -161,11 +166,11 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
     setTouched((prev) => ({ ...prev, [field]: true }));
   }, []);
 
-  /* ── Real-time validation ── */
-  useEffect(() => {
-    const newErrors = validate(form);
-    setErrors(newErrors);
-  }, [form]);
+  /* ── Real-time validation ──
+     `errors` is fully derived from `form`, so it's computed during render
+     instead of mirrored into state via an effect (avoids cascading renders).
+     useMemo keeps the reference stable across renders that don't change form. */
+  const errors = useMemo(() => validate(form), [form]);
 
   /* ── Submit ── */
   const handleSubmit = (e) => {
@@ -176,10 +181,8 @@ const JobForm = ({ mode = 'create', initialData, onSubmit, isLoading = false }) 
       salaryMin: true,
     });
 
-    const validationErrors = validate(form);
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      const firstErrorField = Object.keys(validationErrors)[0];
+    if (Object.keys(errors).length > 0) {
+      const firstErrorField = Object.keys(errors)[0];
       const el = document.getElementById(firstErrorField);
       if (el) setTimeout(() => el.focus(), 50);
       return;

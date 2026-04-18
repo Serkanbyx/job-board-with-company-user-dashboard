@@ -11,6 +11,22 @@ const getExperienceLabel = (value) =>
 const getTypeLabel = (value) =>
   JOB_TYPES.find((t) => t.value === value)?.label || value;
 
+const SaveButton = ({ isSaved, isAnimating, onClick }) => (
+  <button
+    onClick={onClick}
+    className="group/save flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-pink-50 dark:hover:bg-pink-950/30"
+    aria-label={isSaved ? 'Unsave job' : 'Save job'}
+  >
+    <Heart
+      className={`h-4 w-4 transition-colors ${isAnimating ? 'animate-heart-pop' : ''} ${
+        isSaved
+          ? 'fill-pink-500 text-pink-500'
+          : 'text-slate-400 group-hover/save:text-pink-500'
+      }`}
+    />
+  </button>
+);
+
 const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSaveButton = false }) => {
   const {
     _id,
@@ -43,37 +59,12 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
     onToggleSave?.(_id);
   };
 
-  const SaveButton = () => {
-    if (!showSaveButton) return null;
-    return (
-      <button
-        onClick={handleSaveClick}
-        className="group/save flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-pink-50 dark:hover:bg-pink-950/30"
-        aria-label={isSaved ? 'Unsave job' : 'Save job'}
-      >
-        <Heart
-          className={`h-4 w-4 transition-colors ${heartAnimating ? 'animate-heart-pop' : ''} ${
-            isSaved
-              ? 'fill-pink-500 text-pink-500'
-              : 'text-slate-400 group-hover/save:text-pink-500'
-          }`}
-        />
-      </button>
-    );
-  };
+  const saveButton = showSaveButton ? (
+    <SaveButton isSaved={isSaved} isAnimating={heartAnimating} onClick={handleSaveClick} />
+  ) : null;
 
-  const DeadlineWarning = () => {
-    if (!deadline || expired) return null;
-    if (daysLeft !== null && daysLeft <= 7 && daysLeft >= 0) {
-      return (
-        <span className="flex items-center gap-1 text-xs font-medium text-warning-600 dark:text-amber-400">
-          <Calendar className="h-3.5 w-3.5" />
-          {daysLeft === 0 ? 'Expires today' : `${daysLeft}d left`}
-        </span>
-      );
-    }
-    return null;
-  };
+  const showDeadlineWarning =
+    deadline && !expired && daysLeft !== null && daysLeft <= 7 && daysLeft >= 0;
 
   if (variant === 'list') {
     return (
@@ -111,7 +102,12 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
               <p className="text-sm font-semibold text-slate-900 dark:text-white">
                 {formatSalary(salary)}
               </p>
-              <DeadlineWarning />
+              {showDeadlineWarning && (
+                <span className="flex items-center gap-1 text-xs font-medium text-warning-600 dark:text-amber-400">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {daysLeft === 0 ? 'Expires today' : `${daysLeft}d left`}
+                </span>
+              )}
             </div>
           </div>
 
@@ -179,7 +175,7 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
 
         {/* Right actions */}
         <div className="flex shrink-0 flex-col items-center gap-2">
-          <SaveButton />
+          {saveButton}
         </div>
       </Link>
     );
@@ -212,7 +208,7 @@ const JobCard = ({ job, variant = 'grid', isSaved = false, onToggleSave, showSav
           <p className="truncate text-sm text-slate-500 dark:text-slate-400">{companyName}</p>
         </div>
 
-        <SaveButton />
+        {saveButton}
       </div>
 
       {/* Badges */}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import ErrorBoundary from '../common/ErrorBoundary';
 import { User, Shield, Bell, ChevronDown } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import AdminSidebar from './AdminSidebar';
 
 const TABS = [

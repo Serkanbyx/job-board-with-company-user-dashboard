@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Briefcase,
   Bell,
@@ -12,7 +12,7 @@ import {
   Settings,
   LogOut,
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { usePreferences } from '../../contexts/PreferencesContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { getInitials } from '../../utils/helpers';
@@ -29,11 +29,22 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, setTheme } = usePreferences();
   const { unreadCount } = useNotifications();
-  const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+
+  // Close mobile menu and dropdowns when the route changes. Tracking the
+  // previous pathname during render avoids the cascading re-render caused
+  // by calling setState inside an effect.
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setMobileMenuOpen(false);
+    setUserDropdownOpen(false);
+    setNotificationOpen(false);
+  }
 
   const userDropdownRef = useRef(null);
   const notificationRef = useRef(null);
@@ -77,12 +88,6 @@ const Navbar = () => {
     };
   }, [closeAllDropdowns]);
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileMenuOpen(false);
-    closeAllDropdowns();
-  }, [navigate, closeAllDropdowns]);
-
   const handleLogout = async () => {
     closeAllDropdowns();
     setMobileMenuOpen(false);
@@ -92,8 +97,9 @@ const Navbar = () => {
   const dashboardLink = user ? DASHBOARD_ROUTES[user.role] || '/' : '/';
 
   return (
-    <header className="fixed top-0 right-0 left-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/80">
-      <nav aria-label="Main navigation" className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <>
+      <header className="fixed top-0 right-0 left-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-md dark:border-slate-700 dark:bg-slate-900/80">
+        <nav aria-label="Main navigation" className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Left — Logo */}
         <Link to="/" className="flex items-center gap-2">
           <Briefcase className="h-6 w-6 text-primary-600" />
@@ -250,16 +256,18 @@ const Navbar = () => {
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
-      </nav>
+        </nav>
+      </header>
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer (rendered outside <header> so it's not trapped in the
+          stacking context created by the header's backdrop-blur filter) */}
       {mobileMenuOpen && (
         <>
           <div
-            className="animate-backdrop-in fixed inset-0 top-16 z-30 bg-black/30 md:hidden"
+            className="animate-backdrop-in fixed inset-0 top-16 z-50 bg-black/30 md:hidden"
             onClick={() => setMobileMenuOpen(false)}
           />
-          <div id="mobile-menu" className="animate-slide-in-right fixed top-16 right-0 bottom-0 z-40 w-72 overflow-y-auto border-l border-slate-200 bg-white p-4 shadow-lg md:hidden dark:border-slate-700 dark:bg-slate-900">
+          <div id="mobile-menu" className="animate-slide-in-right fixed top-16 right-0 bottom-0 z-50 w-72 overflow-y-auto border-l border-slate-200 bg-white p-4 shadow-lg md:hidden dark:border-slate-700 dark:bg-slate-900">
             <div className="flex flex-col gap-1">
               <Link
                 to="/jobs"
@@ -343,7 +351,7 @@ const Navbar = () => {
           </div>
         </>
       )}
-    </header>
+    </>
   );
 };
 

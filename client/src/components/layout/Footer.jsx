@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Briefcase } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 const Footer = () => {
   const { pathname } = useLocation();

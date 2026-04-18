@@ -20,7 +20,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import * as jobService from '../../api/jobService';
 import * as savedJobService from '../../api/savedJobService';
 import * as applicationService from '../../api/applicationService';

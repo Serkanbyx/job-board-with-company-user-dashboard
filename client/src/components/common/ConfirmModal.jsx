@@ -22,8 +22,17 @@ const ConfirmModal = ({
   requirePassword,
 }) => {
   const [inputValue, setInputValue] = useState('');
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
   const modalRef = useRef(null);
   const firstFocusRef = useRef(null);
+
+  // Reset input value when the modal transitions from closed to open.
+  // Adjusting state during render (instead of inside an effect) avoids the
+  // cascading re-render warning and is the React-recommended pattern.
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) setInputValue('');
+  }
 
   const isConfirmDisabled =
     isLoading ||
@@ -60,7 +69,6 @@ const ConfirmModal = ({
     let focusTimer;
 
     if (isOpen) {
-      setInputValue('');
       document.addEventListener('keydown', handleKeyDown);
       focusTimer = setTimeout(() => firstFocusRef.current?.focus(), 50);
     }

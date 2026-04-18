@@ -1,9 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import * as authService from '../api/authService';
-
-const AuthContext = createContext(null);
+import { AuthContext } from './authContextInstance';
 
 const INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 minutes
 const THROTTLE_DELAY = 60 * 1000; // Throttle activity events to once per minute
@@ -158,10 +157,4 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
 };

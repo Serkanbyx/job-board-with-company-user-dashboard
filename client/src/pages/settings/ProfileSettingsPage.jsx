@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Camera, Upload, FileText, Trash2, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import * as authService from '../../api/authService';
 import * as uploadService from '../../api/uploadService';
 import TagInput from '../../components/common/TagInput';

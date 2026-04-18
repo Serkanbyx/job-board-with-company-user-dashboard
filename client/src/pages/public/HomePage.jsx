@@ -23,7 +23,7 @@ import {
   MoreHorizontal,
   ChevronRight,
 } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import * as jobService from '../../api/jobService';
 import { COMPANY_INDUSTRIES } from '../../utils/constants';
 import JobCard from '../../components/common/JobCard';

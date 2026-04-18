@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import * as notificationService from '../api/notificationService';
 
 const NotificationContext = createContext(null);
@@ -10,7 +10,19 @@ export const NotificationProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [prevIsAuthenticated, setPrevIsAuthenticated] = useState(isAuthenticated);
   const pollRef = useRef(null);
+
+  // Reset notification state on auth transition (e.g. logout). Done during
+  // render via the previous-value pattern so we avoid the cascading re-render
+  // that would happen if we called setState inside an effect.
+  if (isAuthenticated !== prevIsAuthenticated) {
+    setPrevIsAuthenticated(isAuthenticated);
+    if (!isAuthenticated) {
+      setUnreadCount(0);
+      setNotifications([]);
+    }
+  }
 
   const refreshUnreadCount = useCallback(async () => {
     try {
@@ -57,18 +69,17 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [refreshUnreadCount, refreshNotifications]);
 
-  // Start polling when authenticated
+  // Start polling when authenticated. The initial fetch is scheduled via
+  // setTimeout(..., 0) so the resulting setState happens inside a callback
+  // rather than synchronously within the effect body (avoids cascading renders).
   useEffect(() => {
-    if (!isAuthenticated) {
-      setUnreadCount(0);
-      setNotifications([]);
-      return;
-    }
+    if (!isAuthenticated) return;
 
-    refreshUnreadCount();
-
+    const initialFetchId = setTimeout(refreshUnreadCount, 0);
     pollRef.current = setInterval(refreshUnreadCount, POLL_INTERVAL);
+
     return () => {
+      clearTimeout(initialFetchId);
       if (pollRef.current) clearInterval(pollRef.current);
     };
   }, [isAuthenticated, refreshUnreadCount]);

@@ -14,7 +14,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
-export const ADMIN_NAV_ITEMS = [
+const ADMIN_NAV_ITEMS = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/admin/users', label: 'Users', icon: Users },
   { to: '/admin/jobs', label: 'Jobs', icon: Briefcase },

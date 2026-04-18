@@ -17,7 +17,7 @@ import toast from 'react-hot-toast';
 import * as applicationService from '../../api/applicationService';
 import { APPLICATION_STATUSES, STATUS_TRANSITIONS } from '../../utils/constants';
 import { getInitials } from '../../utils/helpers';
-import { formatDate, formatDateTime } from '../../utils/formatDate';
+import { formatDate } from '../../utils/formatDate';
 import StatusBadge from '../common/StatusBadge';
 import CharacterCounter from '../common/CharacterCounter';
 import StatusTimeline from './StatusTimeline';
