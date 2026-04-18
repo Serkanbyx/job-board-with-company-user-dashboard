@@ -69,11 +69,11 @@ const AnalyticsSkeleton = () => (
     <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
       <div className="mb-6 h-5 w-40 rounded bg-slate-200 dark:bg-slate-700" />
       <div className="flex items-end gap-2" style={{ height: '192px' }}>
-        {Array.from({ length: 12 }, (_, i) => (
+        {[35, 60, 45, 80, 55, 70, 40, 85, 50, 65, 30, 75].map((height, i) => (
           <div key={i} className="flex h-full flex-1 flex-col items-center justify-end">
             <div
               className="w-full rounded-t bg-slate-200 dark:bg-slate-700"
-              style={{ height: `${20 + Math.random() * 70}%` }}
+              style={{ height: `${height}%` }}
             />
             <div className="mt-2 h-3 w-6 rounded bg-slate-200 dark:bg-slate-700" />
           </div>

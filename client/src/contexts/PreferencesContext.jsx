@@ -1,6 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-
-const PreferencesContext = createContext(null);
+import { useState, useEffect, useCallback } from 'react';
+import { PreferencesContext } from './preferencesContextInstance';
 
 const applyTheme = (theme) => {
   const root = document.documentElement;
@@ -42,11 +41,4 @@ export const PreferencesProvider = ({ children }) => {
       {children}
     </PreferencesContext.Provider>
   );
-};
-
-export const usePreferences = () => {
-  const context = useContext(PreferencesContext);
-  if (!context)
-    throw new Error('usePreferences must be used within a PreferencesProvider');
-  return context;
 };

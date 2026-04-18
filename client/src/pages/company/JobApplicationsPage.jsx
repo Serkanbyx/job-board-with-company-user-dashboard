@@ -20,7 +20,7 @@ import * as applicationService from '../../api/applicationService';
 import { getMyJobs } from '../../api/jobService';
 import { APPLICATION_STATUSES, STATUS_TRANSITIONS } from '../../utils/constants';
 import { getInitials } from '../../utils/helpers';
-import { formatDate, formatRelativeDate } from '../../utils/formatDate';
+import { formatRelativeDate } from '../../utils/formatDate';
 import StatusBadge from '../../components/common/StatusBadge';
 import Pagination from '../../components/common/Pagination';
 import EmptyState from '../../components/common/EmptyState';
@@ -124,21 +124,18 @@ const QuickStatusDropdown = ({ application, onUpdate }) => {
 
       {open && (
         <div className="absolute right-0 z-30 mt-1 w-40 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-800">
-          {allowed.map((s) => {
-            const label = APPLICATION_STATUSES.find((st) => st.value === s)?.label || s;
-            return (
-              <button
-                key={s}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSelect(s);
-                }}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
-              >
-                <StatusBadge status={s} size="sm" />
-              </button>
-            );
-          })}
+          {allowed.map((s) => (
+            <button
+              key={s}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelect(s);
+              }}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-700"
+            >
+              <StatusBadge status={s} size="sm" />
+            </button>
+          ))}
         </div>
       )}
     </div>

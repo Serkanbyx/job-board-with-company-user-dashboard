@@ -190,14 +190,18 @@ const UserDetailModal = ({ user, onClose }) => {
 const ChangeRoleModal = ({ user, onClose, onConfirm, isLoading }) => {
   const [selectedRole, setSelectedRole] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [prevUserId, setPrevUserId] = useState(user?._id);
 
   useLockBodyScroll(!!user);
 
-  // Reset when modal target changes
-  useEffect(() => {
+  // Reset transient form state when the modal target changes. Done during
+  // render (previous-value pattern) to avoid the cascading re-render that
+  // would happen if we called setState inside an effect.
+  if (user?._id !== prevUserId) {
+    setPrevUserId(user?._id);
     setSelectedRole('');
     setSubmitted(false);
-  }, [user?._id]);
+  }
 
   const roles = ['candidate', 'company', 'admin'].filter((r) => r !== user?.role);
   const hasError = submitted && !selectedRole;

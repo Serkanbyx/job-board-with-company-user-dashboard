@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   UserSearch,
@@ -150,9 +150,14 @@ const RegisterPage = () => {
     experienceLevel: '',
   });
 
+  // Seed the role from `?role=` once. A ref guards against re-running if
+  // searchParams later changes, so we don't need formData.role in deps.
+  const didSeedRoleRef = useRef(false);
   useEffect(() => {
+    if (didSeedRoleRef.current) return;
     const roleParam = searchParams.get('role');
-    if (roleParam && ['candidate', 'company'].includes(roleParam) && !formData.role) {
+    if (roleParam && ['candidate', 'company'].includes(roleParam)) {
+      didSeedRoleRef.current = true;
       setFormData((prev) => ({ ...prev, role: roleParam }));
       setStep(2);
     }

@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../hooks/useAuth';
-import { usePreferences } from '../../contexts/PreferencesContext';
+import { usePreferences } from '../../hooks/usePreferences';
 import * as authService from '../../api/authService';
 import ConfirmModal from '../../components/common/ConfirmModal';
 

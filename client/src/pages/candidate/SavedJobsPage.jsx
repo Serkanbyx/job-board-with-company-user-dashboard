@@ -54,6 +54,19 @@ const SavedJobsPage = () => {
     setUnsaveTarget(jobId);
   }, []);
 
+  const handleUndoUnsave = useCallback(async (jobId, removedItem) => {
+    try {
+      await toggleSaveJob(jobId);
+      if (removedItem) {
+        setSavedJobs((prev) => [removedItem, ...prev]);
+        setPagination((prev) => ({ ...prev, total: prev.total + 1 }));
+      }
+      toast.success('Job restored to saved list');
+    } catch {
+      toast.error('Failed to undo');
+    }
+  }, []);
+
   const handleConfirmUnsave = useCallback(async () => {
     if (!unsaveTarget) return;
     const jobId = unsaveTarget;
@@ -96,20 +109,7 @@ const SavedJobsPage = () => {
       }
       toast.error('Failed to remove job');
     }
-  }, [unsaveTarget, savedJobs]);
-
-  const handleUndoUnsave = useCallback(async (jobId, removedItem) => {
-    try {
-      await toggleSaveJob(jobId);
-      if (removedItem) {
-        setSavedJobs((prev) => [removedItem, ...prev]);
-        setPagination((prev) => ({ ...prev, total: prev.total + 1 }));
-      }
-      toast.success('Job restored to saved list');
-    } catch {
-      toast.error('Failed to undo');
-    }
-  }, []);
+  }, [unsaveTarget, savedJobs, handleUndoUnsave]);
 
   const handlePageChange = useCallback((newPage) => {
     setPage(newPage);

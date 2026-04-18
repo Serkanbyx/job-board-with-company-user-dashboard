@@ -89,11 +89,11 @@ const DashboardSkeleton = () => (
     <div className="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-800">
       <div className="mb-4 h-5 w-44 rounded bg-slate-200 dark:bg-slate-700" />
       <div className="flex items-end gap-3">
-        {Array.from({ length: 6 }, (_, i) => (
+        {[60, 95, 75, 110, 50, 85].map((height, i) => (
           <div key={i} className="flex flex-1 flex-col items-center gap-2">
             <div
               className="w-full rounded-t bg-slate-200 dark:bg-slate-700"
-              style={{ height: `${40 + Math.random() * 80}px` }}
+              style={{ height: `${height}px` }}
             />
             <div className="h-3 w-8 rounded bg-slate-200 dark:bg-slate-700" />
           </div>

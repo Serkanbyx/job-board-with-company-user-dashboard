@@ -26,7 +26,7 @@ import * as savedJobService from '../../api/savedJobService';
 import * as applicationService from '../../api/applicationService';
 import JobCard from '../../components/jobs/JobCard';
 import ApplyModal from '../../components/jobs/ApplyModal';
-import { formatSalary, getJobTypeColor, truncateText } from '../../utils/helpers';
+import { formatSalary, getJobTypeColor } from '../../utils/helpers';
 import { formatDate, formatRelativeDate, isExpired, daysUntil } from '../../utils/formatDate';
 import {
   JOB_TYPES,
@@ -105,31 +105,6 @@ const JobDetailPage = () => {
 
   /* ─── Data fetching ─── */
 
-  const fetchJob = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await jobService.getJobBySlug(slug);
-      // API envelope: { success, message, data: { job } }
-      const jobData = response?.data?.job || response?.job || null;
-      setJob(jobData);
-
-      if (jobData?._id) {
-        // Similar jobs route uses :slug, so pass the slug — not the id
-        jobService
-          .getSimilarJobs(jobData.slug || slug)
-          .then((res) => setSimilarJobs(res?.data?.jobs || res?.jobs || []))
-          .catch(() => {});
-
-        checkCandidateStatus(jobData._id);
-      }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load job details.');
-    } finally {
-      setLoading(false);
-    }
-  }, [slug]);
-
   const checkCandidateStatus = useCallback(
     async (jobId) => {
       if (!isAuthenticated || !isCandidate) return;
@@ -165,6 +140,31 @@ const JobDetailPage = () => {
     },
     [isAuthenticated, isCandidate]
   );
+
+  const fetchJob = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await jobService.getJobBySlug(slug);
+      // API envelope: { success, message, data: { job } }
+      const jobData = response?.data?.job || response?.job || null;
+      setJob(jobData);
+
+      if (jobData?._id) {
+        // Similar jobs route uses :slug, so pass the slug — not the id
+        jobService
+          .getSimilarJobs(jobData.slug || slug)
+          .then((res) => setSimilarJobs(res?.data?.jobs || res?.jobs || []))
+          .catch(() => {});
+
+        checkCandidateStatus(jobData._id);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to load job details.');
+    } finally {
+      setLoading(false);
+    }
+  }, [slug, checkCandidateStatus]);
 
   useEffect(() => {
     fetchJob();

@@ -112,7 +112,7 @@ const HOW_IT_WORKS = {
 /* ══════════════════════════════════════════════════════════════════════════ */
 const HomePage = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, isCompany, isCandidate } = useAuth();
+  const { isAuthenticated, isCompany, isCandidate } = useAuth();
 
   const [keyword, setKeyword] = useState('');
   const [location, setLocation] = useState('');

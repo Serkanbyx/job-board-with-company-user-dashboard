@@ -1,8 +1,7 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import * as notificationService from '../api/notificationService';
-
-const NotificationContext = createContext(null);
+import { NotificationContext } from './notificationContextInstance';
 
 const POLL_INTERVAL = 60 * 1000; // 60 seconds
 
@@ -98,13 +97,4 @@ export const NotificationProvider = ({ children }) => {
       {children}
     </NotificationContext.Provider>
   );
-};
-
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context)
-    throw new Error(
-      'useNotifications must be used within a NotificationProvider',
-    );
-  return context;
 };

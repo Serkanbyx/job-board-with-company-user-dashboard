@@ -13,8 +13,8 @@ import {
   LogOut,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { usePreferences } from '../../contexts/PreferencesContext';
-import { useNotifications } from '../../contexts/NotificationContext';
+import { usePreferences } from '../../hooks/usePreferences';
+import { useNotifications } from '../../hooks/useNotifications';
 import { getInitials } from '../../utils/helpers';
 import RoleBadge from '../common/RoleBadge';
 import NotificationDropdown from '../notifications/NotificationDropdown';

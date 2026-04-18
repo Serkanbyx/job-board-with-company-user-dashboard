@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Bell, CheckCheck } from 'lucide-react';
-import { useNotifications } from '../../contexts/NotificationContext';
+import { useNotifications } from '../../hooks/useNotifications';
 import NotificationItem from './NotificationItem';
 
 const NotificationDropdown = ({ isOpen, onClose }) => {
