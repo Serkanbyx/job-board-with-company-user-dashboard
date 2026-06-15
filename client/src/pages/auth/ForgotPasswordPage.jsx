@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { forgotPassword } from '../../api/authService';
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('');
@@ -16,10 +17,14 @@ const ForgotPasswordPage = () => {
     }
 
     setIsLoading(true);
-    // Simulate request — backend endpoint pending
-    await new Promise((r) => setTimeout(r, 600));
-    setIsLoading(false);
-    setSubmitted(true);
+    try {
+      await forgotPassword(email);
+      setSubmitted(true);
+    } catch (error) {
+      toast.error(error.message || 'Something went wrong. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

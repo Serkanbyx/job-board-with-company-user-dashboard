@@ -81,7 +81,7 @@ const ApplicationDetailModal = ({ isOpen, onClose, application, onStatusUpdate }
         statusNote: statusNote || undefined,
       });
       toast.success(`Status updated to ${status}`);
-      onStatusUpdate?.(res.application || { ...application, status });
+      onStatusUpdate?.(res.data?.application || { ...application, status });
       setShowStatusForm(false);
       setStatus('');
       setStatusNote('');

@@ -75,6 +75,9 @@ export const registerValidator = [
     .trim()
     .isLength({ max: 100 }).withMessage('Location cannot exceed 100 characters')
     .escape(),
+  body('experience')
+    .optional()
+    .isIn(EXPERIENCE_LEVELS).withMessage(`Experience must be one of: ${EXPERIENCE_LEVELS.join(', ')}`),
 ];
 
 export const loginValidator = [
@@ -233,4 +236,21 @@ export const changePasswordValidator = [
 export const deleteAccountValidator = [
   body('password')
     .notEmpty().withMessage('Password is required to delete your account'),
+];
+
+export const forgotPasswordValidator = [
+  body('email')
+    .notEmpty().withMessage('Email is required')
+    .isEmail().withMessage('Please provide a valid email')
+    .normalizeEmail(),
+];
+
+export const resetPasswordValidator = [
+  body('token')
+    .notEmpty().withMessage('Reset token is required')
+    .isString().withMessage('Reset token must be a string'),
+  body('password')
+    .notEmpty().withMessage('New password is required')
+    .isLength({ min: 6 }).withMessage('New password must be at least 6 characters')
+    .matches(/^(?=.*[A-Z])(?=.*\d)/).withMessage('Password must contain at least one uppercase letter and one number'),
 ];

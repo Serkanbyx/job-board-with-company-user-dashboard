@@ -99,7 +99,7 @@ const QuickStatusDropdown = ({ application, onUpdate }) => {
         status: newStatus,
       });
       toast.success(`Status updated to ${newStatus}`);
-      onUpdate(res.application || { ...application, status: newStatus });
+      onUpdate(res.data?.application || { ...application, status: newStatus });
     } catch (error) {
       toast.error(error.message || 'Failed to update status');
     } finally {
@@ -340,7 +340,7 @@ const JobApplicationsPage = () => {
   const fetchStats = useCallback(async () => {
     try {
       const res = await applicationService.getApplicationStats(jobId);
-      setStats(res.stats);
+      setStats(res.data?.stats || null);
     } catch {
       // non-critical
     }
@@ -357,8 +357,8 @@ const JobApplicationsPage = () => {
 
       const res = await applicationService.getJobApplications(jobId, params);
       setApplications(res.data || []);
-      setTotalPages(res.totalPages || 1);
-      setTotalItems(res.total || 0);
+      setTotalPages(res.pagination?.totalPages || 1);
+      setTotalItems(res.pagination?.total || 0);
     } catch (error) {
       toast.error(error.message || 'Failed to load applications');
     } finally {
@@ -401,7 +401,7 @@ const JobApplicationsPage = () => {
         status,
         statusNote: note || undefined,
       });
-      const { updated, skipped } = res;
+      const { updated = 0, skipped = 0 } = res.data || {};
       toast.success(
         `Updated ${updated} application${updated !== 1 ? 's' : ''}${
           skipped > 0 ? `. ${skipped} skipped (invalid transition).` : '.'

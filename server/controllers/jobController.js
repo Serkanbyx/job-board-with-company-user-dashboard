@@ -538,7 +538,12 @@ export const getSimilarJobs = async (req, res, next) => {
   try {
     const { slug } = req.params;
 
-    const targetJob = await Job.findOne({ slug });
+    // Accept either a slug or a Mongo ObjectId to mirror getJobBySlug behavior.
+    const lookup = mongoose.isValidObjectId(slug)
+      ? { $or: [{ slug }, { _id: slug }] }
+      : { slug };
+
+    const targetJob = await Job.findOne(lookup);
 
     if (!targetJob) {
       return sendError(res, 404, 'Job not found.');

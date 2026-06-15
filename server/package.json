@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "nodemon index.js",
     "start": "node index.js",
-    "build": "npm install && node seed/seed.js",
+    "build": "npm install",
     "seed": "node seed/seed.js",
     "seed:admin": "node seed/seed.js --admin-only"
   },

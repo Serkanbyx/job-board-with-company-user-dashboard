@@ -9,6 +9,8 @@ import {
   updateProfile,
   changePassword,
   deleteAccount,
+  forgotPassword,
+  resetPassword,
 } from '../controllers/authController.js';
 import { protect } from '../middlewares/auth.js';
 import {
@@ -24,6 +26,8 @@ import {
   updateProfileValidator,
   changePasswordValidator,
   deleteAccountValidator,
+  forgotPasswordValidator,
+  resetPasswordValidator,
 } from '../validators/authValidator.js';
 
 const router = Router();
@@ -32,6 +36,8 @@ const router = Router();
 router.post('/register', authLimiter, registerValidator, validate, register);
 router.post('/login', authLimiter, loginValidator, validate, login);
 router.post('/refresh-token', refreshLimiter, refreshTokenHandler);
+router.post('/forgot-password', authLimiter, forgotPasswordValidator, validate, forgotPassword);
+router.post('/reset-password', passwordLimiter, resetPasswordValidator, validate, resetPassword);
 
 // Protected routes
 router.post('/logout', protect, logout);

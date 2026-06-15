@@ -28,6 +28,19 @@ const STATUS_TRANSITIONS = {
 
 const CANDIDATE_EXCLUDED_FIELDS = '-internalNotes -rating';
 
+/**
+ * Allowed sort options for the job-applications listing.
+ * Defaults to newest first when the requested key is unknown.
+ */
+const APPLICATION_SORT_OPTIONS = {
+  createdAt: { createdAt: 1 },
+  '-createdAt': { createdAt: -1 },
+  '-rating': { rating: -1, createdAt: -1 },
+};
+
+const resolveApplicationSort = (sortKey) =>
+  APPLICATION_SORT_OPTIONS[sortKey] || { createdAt: -1 };
+
 const JOB_POPULATE_FIELDS = 'title slug location type isActive company salary deadline';
 
 const CANDIDATE_POPULATE_FIELDS =
@@ -191,9 +204,11 @@ export const getJobApplications = async (req, res, next) => {
       filter.rating = { $gte: parseInt(req.query.rating, 10) };
     }
 
+    const sortOption = resolveApplicationSort(req.query.sort);
+
     let query = Application.find(filter)
       .populate('candidate', CANDIDATE_POPULATE_FIELDS)
-      .sort({ createdAt: -1 })
+      .sort(sortOption)
       .skip(skip)
       .limit(limit);
 
@@ -203,7 +218,7 @@ export const getJobApplications = async (req, res, next) => {
 
       const matchingApplications = await Application.find(filter)
         .populate('candidate', CANDIDATE_POPULATE_FIELDS)
-        .sort({ createdAt: -1 });
+        .sort(sortOption);
 
       const filtered = matchingApplications.filter((app) => {
         const candidate = app.candidate;
@@ -375,6 +390,9 @@ export const updateApplicationStatus = async (req, res, next) => {
     }
 
     application.status = status;
+    if (statusNote) {
+      application.statusNote = statusNote;
+    }
     application.statusHistory.push({
       status,
       note: statusNote || undefined,
@@ -559,11 +577,12 @@ export const bulkUpdateStatus = async (req, res, next) => {
 
     const applications = await Application.find({
       _id: { $in: applicationIds },
-    }).populate('job', 'company');
+    }).populate('job', 'company title');
 
     const results = { updated: 0, skipped: 0, errors: [] };
 
     const updatePromises = [];
+    const notificationPayloads = [];
 
     for (const app of applications) {
       const isJobOwner = app.job.company.toString() === req.user._id.toString();
@@ -585,6 +604,9 @@ export const bulkUpdateStatus = async (req, res, next) => {
       }
 
       app.status = status;
+      if (statusNote) {
+        app.statusNote = statusNote;
+      }
       app.statusHistory.push({
         status,
         note: statusNote || undefined,
@@ -593,6 +615,19 @@ export const bulkUpdateStatus = async (req, res, next) => {
       });
 
       updatePromises.push(app.save());
+
+      // Mirror the single-update flow: notify each candidate of the change.
+      notificationPayloads.push({
+        recipient: app.candidate,
+        sender: req.user._id,
+        type: 'status_update',
+        title: 'Application Update',
+        message: `Your application for ${app.job.title} has been ${status}`,
+        link: '/candidate/applications',
+        relatedJob: app.job._id,
+        relatedApplication: app._id,
+      });
+
       results.updated++;
     }
 
@@ -606,6 +641,9 @@ export const bulkUpdateStatus = async (req, res, next) => {
     }
 
     await Promise.all(updatePromises);
+
+    // Fire-and-forget in-app notifications (failures must not fail the request).
+    notificationPayloads.forEach((payload) => createNotification(payload));
 
     sendSuccess(res, 200, results, 'Bulk status update completed');
   } catch (error) {

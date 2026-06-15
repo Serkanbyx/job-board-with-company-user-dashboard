@@ -91,11 +91,13 @@ applicationSchema.index({ status: 1 });
 applicationSchema.index({ createdAt: -1 });
 
 // Pre-save hook — initialize statusHistory for new applications (Mongoose 9 compatible)
+// Only seeds a default entry when none was explicitly provided, so callers (e.g. the
+// seed script) can supply a richer history without it being overwritten.
 applicationSchema.pre('save', async function () {
-  if (this.isNew) {
+  if (this.isNew && (!this.statusHistory || this.statusHistory.length === 0)) {
     this.statusHistory = [
       {
-        status: 'pending',
+        status: this.status || 'pending',
         changedAt: new Date(),
         changedBy: this.candidate,
       },

@@ -756,9 +756,10 @@ const daysAgo = (minDays, maxDays) => {
 const seedAdminOnly = async () => {
   const adminConfig = getAdminConfig();
 
+  // Falls back to safe defaults (admin@jobboard.com / Admin123!) when ADMIN_EMAIL
+  // and ADMIN_PASSWORD are not provided, so a fresh `.env` works out of the box.
   if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
-    console.error('ADMIN_EMAIL and ADMIN_PASSWORD must be set in environment variables');
-    process.exit(1);
+    console.warn('⚠️  ADMIN_EMAIL / ADMIN_PASSWORD not set — using default admin credentials.');
   }
 
   console.log(`📧 Admin email: ${adminConfig.email}`);

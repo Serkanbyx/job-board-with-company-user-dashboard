@@ -26,7 +26,7 @@ import {
 import { useAuth } from '../../hooks/useAuth';
 import * as jobService from '../../api/jobService';
 import { COMPANY_INDUSTRIES } from '../../utils/constants';
-import JobCard from '../../components/common/JobCard';
+import JobCard from '../../components/jobs/JobCard';
 import SkeletonCard from '../../components/common/SkeletonCard';
 
 /* ────────────────────────── Industry icon mapping ────────────────────────── */

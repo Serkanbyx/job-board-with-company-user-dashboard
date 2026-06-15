@@ -1,4 +1,6 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
+import env from '../config/env.js';
 import User from '../models/User.js';
 import RefreshToken from '../models/RefreshToken.js';
 import {
@@ -9,6 +11,9 @@ import {
 import { sendSuccess, sendError } from '../utils/apiResponse.js';
 import sendEmail from '../services/emailService.js';
 import welcomeEmail from '../templates/emails/welcomeEmail.js';
+import passwordResetEmail from '../templates/emails/passwordResetEmail.js';
+
+const PASSWORD_RESET_TTL_MINUTES = 15;
 
 /**
  * @desc    Register a new user (candidate or company)
@@ -503,6 +508,115 @@ export const deleteAccount = async (req, res, next) => {
     await User.findByIdAndDelete(user._id);
 
     sendSuccess(res, 200, null, 'Account deleted successfully.');
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Request a password reset link
+ * @route   POST /api/auth/forgot-password
+ * @access  Public
+ */
+export const forgotPassword = async (req, res, next) => {
+  // Generic response prevents user enumeration regardless of whether the email exists.
+  const genericMessage =
+    'If an account exists for that email, a password reset link has been sent.';
+
+  try {
+    const { email } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (user && user.isActive) {
+      const resetToken = crypto.randomBytes(32).toString('hex');
+      const hashedToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex');
+
+      user.passwordResetToken = hashedToken;
+      user.passwordResetExpires = new Date(
+        Date.now() + PASSWORD_RESET_TTL_MINUTES * 60 * 1000
+      );
+      await user.save({ validateBeforeSave: false });
+
+      try {
+        const resetUrl = `${env.CLIENT_URL}/reset-password/${resetToken}`;
+        const { subject, html } = passwordResetEmail(
+          user,
+          resetUrl,
+          PASSWORD_RESET_TTL_MINUTES
+        );
+        await sendEmail({ to: user.email, subject, html });
+      } catch {
+        // If the email fails, clear the token so a stale one isn't left behind.
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save({ validateBeforeSave: false });
+      }
+    }
+
+    sendSuccess(res, 200, null, genericMessage);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Reset password using a valid reset token
+ * @route   POST /api/auth/reset-password
+ * @access  Public
+ */
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return sendError(res, 400, 'Reset token and new password are required.');
+    }
+
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: new Date() },
+    }).select('+password +passwordHistory +tokenVersion');
+
+    if (!user) {
+      return sendError(res, 400, 'Invalid or expired reset token. Please request a new one.');
+    }
+
+    const isReused = await user.isPasswordReused(password);
+    if (isReused) {
+      return sendError(
+        res,
+        400,
+        'This password has been used recently. Please choose a different password.'
+      );
+    }
+
+    // Push the old hash to history before overwriting with the new plaintext.
+    if (!user.passwordHistory) user.passwordHistory = [];
+    if (user.password) {
+      user.passwordHistory = [user.password, ...user.passwordHistory].slice(0, 5);
+    }
+
+    user.password = password;
+    user.tokenVersion += 1;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    // Invalidate all existing sessions after a reset.
+    await RefreshToken.revokeAllForUser(user._id);
+
+    sendSuccess(
+      res,
+      200,
+      null,
+      'Password has been reset successfully. Please log in with your new password.'
+    );
   } catch (error) {
     next(error);
   }

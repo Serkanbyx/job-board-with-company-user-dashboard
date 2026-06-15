@@ -364,6 +364,60 @@ const swaggerDefinition = {
         },
       },
     },
+    '/auth/forgot-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Request a password reset link',
+        description: 'Sends a time-limited password reset link to the email if an active account exists. Always returns a generic success response to prevent user enumeration.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Generic success response (whether or not the email exists)' },
+          422: { $ref: '#/components/responses/ValidationError' },
+          429: { $ref: '#/components/responses/TooManyRequests' },
+        },
+      },
+    },
+    '/auth/reset-password': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Reset password with a token',
+        description: 'Resets the account password using a valid reset token, then revokes all existing sessions.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['token', 'password'],
+                properties: {
+                  token: { type: 'string' },
+                  password: { type: 'string', minLength: 6, description: 'Must include at least one uppercase letter and one number' },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Password reset successfully' },
+          400: { description: 'Invalid or expired reset token', content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } } },
+          422: { $ref: '#/components/responses/ValidationError' },
+          429: { $ref: '#/components/responses/TooManyRequests' },
+        },
+      },
+    },
     '/auth/logout': {
       post: {
         tags: ['Auth'],
