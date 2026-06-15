@@ -113,8 +113,6 @@ All screenshots are captured from the [live deployment](https://job-board-with-c
   </tr>
 </table>
 
-> Capture these views from the live deployment and drop them into `assets/screenshots/` using the file names above to render the grid.
-
 ---
 
 ## Architecture
